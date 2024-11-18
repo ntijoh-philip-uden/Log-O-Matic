@@ -103,23 +103,38 @@
                 </v-card>
             </v-container>
 
-            <v-timeline>
-                <v-timeline-item size="large">
-                <template v-slot:icon>
-                    <v-avatar image="https://i.pravatar.cc/64"></v-avatar>
-                </template>
+
+
+            <v-timeline 
+                align="start"
+                width="100%"
+                class="border-b-lg pa-8"
+            >
+                <v-timeline-item>
                 <template v-slot:opposite>
-                    <span>Tus eu perfecto</span>
+                    Daniel Berg
                 </template>
-                <v-card class="elevation-2">
-                    <v-card-title class="text-h5">
-                    Lorem ipsum
-                    </v-card-title>
-                    <v-card-text>Lorem ipsum dolor sit amet, no nam oblique veritus. Commune scaevola imperdiet nec ut, sed euismod convenire principes at. Est et nobis iisque percipit, an vim zril disputando voluptatibus, vix an salutandi sententiae.</v-card-text>
-                </v-card>
+                <div>
+                    <div class="text-h6">Content title</div>
+                    <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    </p>
+                </div>
                 </v-timeline-item>
-            </v-timeline>            
-            
+
+                <v-timeline-item>
+                <template v-slot:opposite>
+                    Örjan Lax
+                </template>
+                <div>
+                    <div class="text-h6">Content title</div>
+                    <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                    </p>
+                </div>
+                </v-timeline-item>
+            </v-timeline>
+
         </v-card>
 
     </v-container>
