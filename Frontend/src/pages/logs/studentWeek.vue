@@ -6,13 +6,12 @@
         max-width="448"
         rounded="lg"
         >
-            <v-card-text class="text-medium-emphasis font-weight-bold justify-center align-center fill-height d-flex text-h5">
-                Monday Week 48
+            <v-card-text class="text-medium-emphasis font-weight-bold justify-center align-center fill-height d-flex text-h5 pb-2">
+                Week 48
             </v-card-text>
-            <v-radio-group inline class="d-flex justify-center align-center ">
-                <v-radio label="One at a Time" value="one" class="mr-4"></v-radio>
-                <v-radio label="All at Once" value="two"></v-radio>
-            </v-radio-group>
+            <v-card-text class="text-medium-emphasis font-weight-bold justify-center align-center fill-height d-flex text-h5 pt-0 pb-0">
+                Lynwood Satterfield
+            </v-card-text>
             <v-carousel
                 height="80"
                 hide-delimiters
@@ -22,7 +21,7 @@
                     height="100%"
                 >
                     <v-card-text class="d-flex fill-height justify-center align-center text-h6">
-                        1
+                        Monday
                     </v-card-text>
                 </v-sheet>
                 </v-carousel-item>
@@ -31,7 +30,7 @@
                     height="100%"
                 >
                     <v-card-text class="d-flex fill-height justify-center align-center text-h6">
-                        2
+                        Thuesday
                     </v-card-text>
                 </v-sheet>
                 </v-carousel-item>
@@ -40,7 +39,7 @@
                     height="100%"
                 >
                     <v-card-text class="d-flex fill-height justify-center align-center text-h6">
-                        3
+                        Wednsday
                     </v-card-text>
                 </v-sheet>
                 </v-carousel-item>
