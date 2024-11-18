@@ -1,50 +1,57 @@
 import { defineStore } from "pinia";
-import router from "../router";
 
 export interface ITeacher {
-    id: number;
-    email: string;
-    name: string;
+  id: number;
+  email: string;
+  name: string;
 }
 
 export const useTeachersStore = defineStore("teachers", {
   state: () => ({
-    teachers: [{
+    teachers: [
+      {
         id: 0,
         email: "kevin.radley@elev.ga.ntig.se",
-        name: "Kevin Radley",
-    },
-    {
+        name: "Kevin Radley0",
+      },
+      {
         id: 1,
         email: "kevin.radley@elev.ga.ntig.se",
-        name: "Kevin Radley",
-    },
-    {
+        name: "Kevin Radley1",
+      },
+      {
         id: 2,
         email: "kevin.radley@elev.ga.ntig.se",
-        name: "Kevin Radley",
-    },
-    {
+        name: "Kevin Radley2",
+      },
+      {
         id: 3,
         email: "kevin.radley@elev.ga.ntig.se",
-        name: "Kevin Radley",
-    }] as ITeacher[]
+        name: "Kevin Radley3",
+      },
+    ] as ITeacher[],
+    nextId: 4,
   }),
 
   getters: {
     byId(state) {
-        return (id: number): ITeacher | undefined => {
-            return state.teachers.find((teacher) => teacher.id === id);
-        };
+      return (id: number): ITeacher | undefined => {
+        return state.teachers.find((teacher) => teacher.id === id);
+      };
     },
   },
 
   actions: {
-    async addNew(name: string, email: string, password: string) {
-
+    async addNew(email: string, name: string, password: string) {
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Replace this with actual async operation
+      this.teachers.push({
+        id: this.nextId++,
+        email: email,
+        name: name,
+      });
     },
     async resetPassword(teacher: ITeacher, newPassword: string) {
-        
-    }
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Replace this with actual async operation
+    },
   },
 });
