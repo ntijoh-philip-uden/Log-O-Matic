@@ -1,5 +1,12 @@
 <template>
   <v-app>
+
+    <v-system-bar>
+        <v-icon icon="mdi-wifi-strength-4"></v-icon>
+        <v-icon icon="mdi-signal" class="ms-2"></v-icon>
+        <v-icon icon="mdi-battery" class="ms-2"></v-icon>
+    </v-system-bar>
+
     <v-header>
       <v-app-bar :elevation="6">
         <v-app-bar-title>Log-O-Matic</v-app-bar-title>
