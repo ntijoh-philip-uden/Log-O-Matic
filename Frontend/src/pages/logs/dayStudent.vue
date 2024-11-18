@@ -21,7 +21,7 @@
                 <v-sheet
                     height="100%"
                 >
-                    <v-card-text class="d-flex fill-height justify-center align-center">
+                    <v-card-text class="d-flex fill-height justify-center align-center text-h6">
                         1
                     </v-card-text>
                 </v-sheet>
@@ -30,7 +30,7 @@
                 <v-sheet
                     height="100%"
                 >
-                    <v-card-text class="d-flex fill-height justify-center align-center">
+                    <v-card-text class="d-flex fill-height justify-center align-center text-h6">
                         2
                     </v-card-text>
                 </v-sheet>
@@ -39,7 +39,7 @@
                 <v-sheet
                     height="100%"
                 >
-                    <v-card-text class="d-flex fill-height justify-center align-center">
+                    <v-card-text class="d-flex fill-height justify-center align-center text-h6">
                         3
                     </v-card-text>
                 </v-sheet>
