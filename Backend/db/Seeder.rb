@@ -3,7 +3,7 @@ require 'bcrypt'
 class Seeder
 
   def self.seed!  
-    db = SQLite3::Database.new('db/jwt_demo.db')
+    db = SQLite3::Database.new('db/log-o-matic.db')
 
     db.execute 'DROP TABLE IF EXISTS users'
     db.execute 'DROP TABLE IF EXISTS qotd'

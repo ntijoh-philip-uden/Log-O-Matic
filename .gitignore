@@ -37,4 +37,4 @@ pnpm-debug.log*
 *.sw?
 
 # Database 
-Backend/db/jwt_demo.db
+Backend/db/log-o-matic.db
