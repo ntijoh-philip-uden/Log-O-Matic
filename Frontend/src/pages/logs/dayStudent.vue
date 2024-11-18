@@ -47,16 +47,16 @@
             </v-carousel>
         </v-card>
         <v-card
-        class="mx-auto mt-8"
-        elevation="8"
-        max-width="800"
-        rounded="lg"
+            class="mx-auto mt-8"
+            elevation="8"
+            max-width="800"
+            rounded="lg"
         >
 
             <v-container>
                 <v-card 
                     width="100%"
-                    class="border-b-lg pa-2"
+                    class="border-b-lg py-2"
                 >
                     <v-card-title>
                         Vad har du gjort under dagen?
@@ -68,7 +68,7 @@
 
                 <v-card 
                     width="100%"
-                    class="border-b-lg pa-2"
+                    class="border-b-lg py-2"
                 >
                     <v-card-title>
                         Vad har du lärt dig?
@@ -80,7 +80,7 @@
 
                 <v-card 
                     width="100%"
-                    class="border-b-lg pa-2"
+                    class="border-b-lg py-2"
                 >
                     <v-card-title>
                         Vad förstod du inte / Vilka frågor har du inte fått svar på?
@@ -92,7 +92,7 @@
 
                 <v-card 
                     width="100%"
-                    class="border-b-lg pa-2"
+                    class="border-b-lg py-2"
                 >
                     <v-card-title>
                         Vad vill du lära dig mer om?
@@ -103,40 +103,43 @@
                 </v-card>
             </v-container>
 
-
-
             <v-timeline 
                 align="start"
                 width="100%"
-                class="border-b-lg pa-8"
+                class="px-8 mb-4"
             >
                 <v-timeline-item>
                 <template v-slot:opposite>
                     Daniel Berg
                 </template>
-                <div>
-                    <div class="text-h6">Content title</div>
-                    <p>
+                <p>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    </p>
-                </div>
+                </p>
                 </v-timeline-item>
 
                 <v-timeline-item>
                 <template v-slot:opposite>
                     Örjan Lax
                 </template>
-                <div>
-                    <div class="text-h6">Content title</div>
-                    <p>
+                <p>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    </p>
-                </div>
+                </p>
                 </v-timeline-item>
             </v-timeline>
 
-        </v-card>
+            <v-textarea 
+                label="Comment" 
+                variant="solo-filled"
+                class="mx-6 mb-14"
+            ></v-textarea>
 
+            <v-btn 
+                color="green"
+                class="position-absolute right-0 bottom-0 mr-6 mb-4"
+            >
+                SEND COMMENT
+            </v-btn>
+        </v-card>
     </v-container>
 </template>
 
