@@ -21,7 +21,10 @@ class Seeder
     db.execute 'DROP TABLE IF EXISTS questions';
     
     # Comments
-    db.execute 'DROP TABLE IF EXISTS comments';    
+    db.execute 'DROP TABLE IF EXISTS comments';
+    
+    # Read comments
+    db.execute 'DROP TABLE IF EXISTS readcomments';
 
     ##############################
     # Create all required tables #
@@ -55,6 +58,12 @@ class Seeder
                 "log_id" INTEGER NOT NULL,
                 "user_id" INTEGER NOT NULL,
                 "comment" TEXT NOT NULL)';
+
+    # Read comments
+    db.execute 'CREATE TABLE readcomments (
+                "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                "user_id" INTEGER NOT NULL,
+                "comment_id" INTEGER NOT NULL)';
 
     ##################################
     # Seed all tables with some data #
@@ -102,5 +111,9 @@ class Seeder
     db.execute('INSERT INTO comments (log_id, user_id, comment) VALUES (?, ?, ?)', [1, 2, "1 lorem"]);
     db.execute('INSERT INTO comments (log_id, user_id, comment) VALUES (?, ?, ?)', [2, 2, "2 lorem"]);
     db.execute('INSERT INTO comments (log_id, user_id, comment) VALUES (?, ?, ?)', [3, 2, "3 lorem"]);
+
+    # Read comments
+    db.execute('INSERT INTO readcomments (user_id, comment_id) VALUES (?, ?)', [2, 1]);
+    db.execute('INSERT INTO readcomments (user_id, comment_id) VALUES (?, ?)', [3, 2]);
   end
 end
