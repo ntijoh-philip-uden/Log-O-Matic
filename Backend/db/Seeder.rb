@@ -45,7 +45,8 @@ class Seeder
                 "student_id" INTEGER NOT NULL,
                 "question_id" INTEGER NOT NULL,
                 "answer" TEXT,
-                "timestamp" DEFAULT CURRENT_TIMESTAMP)';
+                "timestamp" DEFAULT CURRENT_TIMESTAMP,
+                "log_number" INTEGER NOT NULL)';
 
     # Questions
     db.execute 'CREATE TABLE questions (
@@ -86,20 +87,20 @@ class Seeder
     db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["e", encrypted_password5, "e.e@gmail.com", 3, 2]);
 
     # Logs
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [3, 1, "1 lorem"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [3, 2, "1 lorem ipsum"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [3, 3, "1 lorem ipsum banan"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [3, 4, "1 lorem ipsum banan kaka"]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [3, 1, "1 lorem", 1]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [3, 2, "1 lorem ipsum", 1]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [3, 3, "1 lorem ipsum banan", 1]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [3, 4, "1 lorem ipsum banan kaka", 1]);
 
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [4, 1, "2 lorem"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [4, 2, "2 lorem ipsum"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [4, 3, "2 lorem ipsum banan"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [4, 4, "2 lorem ipsum banan kaka"]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [4, 1, "2 lorem", 2]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [4, 2, "2 lorem ipsum", 2]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [4, 3, "2 lorem ipsum banan", 2]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [4, 4, "2 lorem ipsum banan kaka", 2]);
 
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [5, 1, "3 lorem"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [5, 2, "3 lorem ipsum"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [5, 3, "3 lorem ipsum banan"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [5, 4, "3 lorem ipsum banan kaka"]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [5, 1, "3 lorem", 3]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [5, 2, "3 lorem ipsum", 3]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [5, 3, "3 lorem ipsum banan", 3]);
+    db.execute('INSERT INTO logs (student_id, question_id, answer, log_number) VALUES (?, ?, ?, ?)', [5, 4, "3 lorem ipsum banan kaka", 3]);
 
     # Questions
     db.execute('INSERT INTO questions (question) VALUES (?)', ["Vad har du gjort under dagen?"]);
@@ -108,9 +109,9 @@ class Seeder
     db.execute('INSERT INTO questions (question) VALUES (?)', ["Vad vill du lära dig mer om?"]);
     
     # Comments
-    db.execute('INSERT INTO comments (log_id, user_id, comment) VALUES (?, ?, ?)', [1, 2, "1 lorem"]);
-    db.execute('INSERT INTO comments (log_id, user_id, comment) VALUES (?, ?, ?)', [2, 2, "2 lorem"]);
-    db.execute('INSERT INTO comments (log_id, user_id, comment) VALUES (?, ?, ?)', [3, 2, "3 lorem"]);
+    db.execute('INSERT INTO comments (log_number, user_id, comment) VALUES (?, ?, ?)', [1, 2, "1 lorem"]);
+    db.execute('INSERT INTO comments (log_number, user_id, comment) VALUES (?, ?, ?)', [2, 2, "2 lorem"]);
+    db.execute('INSERT INTO comments (log_number, user_id, comment) VALUES (?, ?, ?)', [3, 2, "3 lorem"]);
 
     # Read comments
     db.execute('INSERT INTO readcomments (user_id, comment_id) VALUES (?, ?)', [2, 1]);
