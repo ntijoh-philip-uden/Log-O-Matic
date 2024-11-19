@@ -1,7 +1,7 @@
-require 'bundler'
-Bundler.require
+require 'bundler';
+Bundler.require;
 
-require_relative 'qotd_api'
-require_relative 'db/seeder'
+require_relative 'server.rb';
+require_relative 'db/seeder';
 
-run(QotdApi)
+run(Main);
