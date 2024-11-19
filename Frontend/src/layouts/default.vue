@@ -9,7 +9,7 @@
 
     <v-header>
       <v-app-bar :elevation="6">
-        <v-app-bar-title>Log-O-Matic</v-app-bar-title>
+        <v-app-bar-title class="text-h5" @click="router.push('/')">Log-O-Matic</v-app-bar-title>
 
         <template v-slot:append>
           <v-btn v-if="Token && Teacher" @click="router.push('/Admin')">
@@ -44,6 +44,6 @@
 
 <script lang="ts" setup>
   import router from '@/router'
-  const Token = ""
+  const Token = "1"
   const Teacher = true
 </script>
