@@ -3,7 +3,6 @@ import { ref, defineProps, computed, watch } from "vue";
 import { useTeachersStore } from "@/stores/teacherStore";
 import { useStudentsStore } from "@/stores/studentStore";
 
-// Define props for the component
 const props = defineProps({
   type: {
     type: String,
@@ -11,7 +10,6 @@ const props = defineProps({
   },
 });
 
-// Reactive references to store data and table headers
 const teacherStore = useTeachersStore();
 const studentStore = useStudentsStore();
 
@@ -28,24 +26,20 @@ const studentsHeaders = [
   { title: "", key: "exclusive", sortable: false },
 ];
 
-// Define lists of teachers and students
 const teachers = ref(teacherStore.teachers);
 const students = ref(studentStore.students);
 
-// Reactive loading state
 const loading = ref(false);
 
-// Initialize password input mappings for teachers and students
 const teacherPasswordInputs = ref<Record<number, string>>({});
 const studentPasswordInputs = ref<Record<number, string>>({});
 const studentTeacherInputs = computed(() => {
   return students.value.reduce((acc: Record<number, number>, student) => {
-    acc[student.id] = student.teacherId; // Map student id to teacher id
+    acc[student.id] = student.teacherId;
     return acc;
   }, {});
 });
 
-// Methods for resetting passwords and changing teachers
 async function handleResetTeacherPassword(idToReset: number) {
   loading.value = true;
   try {
@@ -80,11 +74,9 @@ async function handleResetStudentPassword(idToReset: number) {
   }
 }
 
-// Watch for changes in students array and trigger updates to inputs
 watch(
   () => students.value,
   (newStudents) => {
-    // You can handle any updates related to the students array here if necessary
     console.log("Students updated:", newStudents);
   },
   { deep: true }
@@ -100,7 +92,6 @@ watch(
     </v-container>
 
     <v-container>
-      <!-- Conditionally render the correct data-table based on props.type -->
       <v-data-table
         v-if="props.type === 'teacher'"
         :items="teachers"
