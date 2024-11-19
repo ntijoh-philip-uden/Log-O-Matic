@@ -25,6 +25,7 @@
                     </v-card-text>
                 </v-sheet>
                 </v-carousel-item>
+
                 <v-carousel-item>
                 <v-sheet
                     height="100%"
@@ -34,12 +35,33 @@
                     </v-card-text>
                 </v-sheet>
                 </v-carousel-item>
+
                 <v-carousel-item>
                 <v-sheet
                     height="100%"
                 >
                     <v-card-text class="d-flex fill-height justify-center align-center text-h6">
                         Wednsday
+                    </v-card-text>
+                </v-sheet>
+                </v-carousel-item>
+
+                <v-carousel-item>
+                <v-sheet
+                    height="100%"
+                >
+                    <v-card-text class="d-flex fill-height justify-center align-center text-h6">
+                        Thursday
+                    </v-card-text>
+                </v-sheet>
+                </v-carousel-item>
+
+                <v-carousel-item>
+                <v-sheet
+                    height="100%"
+                >
+                    <v-card-text class="d-flex fill-height justify-center align-center text-h6">
+                        Friday
                     </v-card-text>
                 </v-sheet>
                 </v-carousel-item>
