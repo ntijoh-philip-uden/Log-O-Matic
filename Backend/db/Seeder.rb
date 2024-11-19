@@ -16,12 +16,18 @@ class Seeder
     
     # Logs
     db.execute 'DROP TABLE IF EXISTS logs';
+
+    # Logs answers
+    db.execute 'DROP TABLE IF EXISTS logsanswers';
     
     # Questions
     db.execute 'DROP TABLE IF EXISTS questions';
     
     # Comments
-    db.execute 'DROP TABLE IF EXISTS comments';    
+    db.execute 'DROP TABLE IF EXISTS comments';
+    
+    # Read comments
+    db.execute 'DROP TABLE IF EXISTS readcomments';
 
     ##############################
     # Create all required tables #
@@ -39,10 +45,15 @@ class Seeder
     # Logs
     db.execute 'CREATE TABLE logs (
                 "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                "student_id" INTEGER NOT NULL,
-                "question_id" INTEGER NOT NULL,
-                "answer" TEXT,
+                "user_id" INTEGER NOT NULL,
                 "timestamp" DEFAULT CURRENT_TIMESTAMP)';
+
+    # Logs answers
+    db.execute 'CREATE TABLE logsanswers (
+                "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                "log_id" INTEGER NOT NULL,
+                "question_id" INTEGER NOT NULL,
+                "answer" TEXT)';
 
     # Questions
     db.execute 'CREATE TABLE questions (
@@ -56,41 +67,52 @@ class Seeder
                 "user_id" INTEGER NOT NULL,
                 "comment" TEXT NOT NULL)';
 
+    # Read comments
+    db.execute 'CREATE TABLE readcomments (
+                "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                "user_id" INTEGER NOT NULL,
+                "comment_id" INTEGER NOT NULL)';
+
     ##################################
     # Seed all tables with some data #
     ##################################
     
     # Users
     encrypted_password1 = BCrypt::Password.create("a");
-    db.execute('INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)', ["a", encrypted_password1, "a.a@gmail.com", 1]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["a", encrypted_password1, "a.a@gmail.com", 1, 1]);
 
     encrypted_password2 = BCrypt::Password.create("b");
-    db.execute('INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)', ["b", encrypted_password2, "b.b@gmail.com", 2]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["b", encrypted_password2, "b.b@gmail.com", 2, 2]);
 
     encrypted_password3 = BCrypt::Password.create("c");
-    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["c", encrypted_password3, "c.c@gmail.com", 3, 2]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["c", encrypted_password3, "c.c@gmail.com", 3, nil]);
 
     encrypted_password4 = BCrypt::Password.create("d");
-    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["d", encrypted_password4, "d.d@gmail.com", 3, 2]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["d", encrypted_password4, "d.d@gmail.com", 3, nil]);
 
     encrypted_password5 = BCrypt::Password.create("e");
-    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["e", encrypted_password5, "e.e@gmail.com", 3, 2]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["e", encrypted_password5, "e.e@gmail.com", 3, nil]);
 
     # Logs
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [3, 1, "1 lorem"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [3, 2, "1 lorem ipsum"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [3, 3, "1 lorem ipsum banan"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [3, 4, "1 lorem ipsum banan kaka"]);
+    db.execute('INSERT INTO logs (user_id) VALUES (?)', [3]);
+    db.execute('INSERT INTO logs (user_id) VALUES (?)', [4]);
+    db.execute('INSERT INTO logs (user_id) VALUES (?)', [5]);
+    
+    # Logs answers
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [1, 1, "1 lorem"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [1, 2, "1 lorem ipsum"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [1, 3, "1 lorem ipsum banan"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [1, 4, "1 lorem ipsum banan kaka"]);
 
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [4, 1, "2 lorem"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [4, 2, "2 lorem ipsum"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [4, 3, "2 lorem ipsum banan"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [4, 4, "2 lorem ipsum banan kaka"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [2, 1, "2 lorem"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [2, 2, "2 lorem ipsum"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [2, 3, "2 lorem ipsum banan"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [2, 4, "2 lorem ipsum banan kaka"]);
 
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [5, 1, "3 lorem"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [5, 2, "3 lorem ipsum"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [5, 3, "3 lorem ipsum banan"]);
-    db.execute('INSERT INTO logs (student_id, question_id, answer) VALUES (?, ?, ?)', [5, 4, "3 lorem ipsum banan kaka"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [3, 1, "3 lorem"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [3, 2, "3 lorem ipsum"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [3, 3, "3 lorem ipsum banan"]);
+    db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [3, 4, "3 lorem ipsum banan kaka"]);
 
     # Questions
     db.execute('INSERT INTO questions (question) VALUES (?)', ["Vad har du gjort under dagen?"]);
@@ -102,5 +124,9 @@ class Seeder
     db.execute('INSERT INTO comments (log_id, user_id, comment) VALUES (?, ?, ?)', [1, 2, "1 lorem"]);
     db.execute('INSERT INTO comments (log_id, user_id, comment) VALUES (?, ?, ?)', [2, 2, "2 lorem"]);
     db.execute('INSERT INTO comments (log_id, user_id, comment) VALUES (?, ?, ?)', [3, 2, "3 lorem"]);
+
+    # Read comments
+    db.execute('INSERT INTO readcomments (user_id, comment_id) VALUES (?, ?)', [2, 1]);
+    db.execute('INSERT INTO readcomments (user_id, comment_id) VALUES (?, ?)', [3, 2]);
   end
 end
