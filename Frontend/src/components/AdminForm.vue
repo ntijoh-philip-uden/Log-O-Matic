@@ -84,7 +84,6 @@ const teacherRules = ref([
 </script>
 
 <template>
-  <!-- Conditionally render the form based on the `type` prop -->
   <v-card class="mt-4" v-if="props.type === 'student'">
     <v-container>
       <v-app-bar-title class="text-h5">Add New Student</v-app-bar-title>
