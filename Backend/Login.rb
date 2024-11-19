@@ -10,7 +10,7 @@ class QotdApi < Sinatra::Base
 
   def initialize
     super
-    @db = SQLite3::Database.new('db/jwt_demo.db')
+    @db = SQLite3::Database.new('db/log-o-matic.db')
     @db.results_as_hash = true
   end
 
