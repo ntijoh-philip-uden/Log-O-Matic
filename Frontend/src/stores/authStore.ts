@@ -12,6 +12,12 @@ export const useAuthStore = defineStore("auth", {
 
   getters: {
     isAuthenticated: (state) => !!state.token && !!state.role,
+    isAdmin: (state) => (state.role ? parseInt(state.role) == 1 : false),
+    isTeacher: (state) =>
+      state.role
+        ? parseInt(state.role) == 2 && parseInt(state.role) == 1
+        : false,
+    isStudent: (state) => (state.role ? parseInt(state.role) == 3 : false),
   },
 
   actions: {
@@ -49,7 +55,20 @@ export const useAuthStore = defineStore("auth", {
         localStorage.setItem("token", this.token!);
         localStorage.setItem("role", this.role!);
 
-        router.push("/adminPage");
+        switch (this.role ? parseInt(this.role) : -1) {
+          case 1:
+            router.push("/admin");
+            break;
+          case 2:
+            router.push("/logs");
+            break;
+          case 3:
+            router.push("/studentindex");
+            break;
+          default:
+            router.push("/");
+            break;
+        }
       } catch (err: any) {
         this.error = "An error occurred";
       }
