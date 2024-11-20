@@ -36,12 +36,13 @@ export const useAuthStore = defineStore("auth", {
         if (!response.ok) {
           this.loginTries++;
           const errorData = await response.json();
-          throw new Error(errorData.message || "Login failed");
+          this.error = errorData.message || "Login failed";
+          return;
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as { token: string; role: number };
         this.token = data.token;
-        this.role = data.role;
+        this.role = data.role.toString();
 
         localStorage.setItem("token", this.token!);
         localStorage.setItem("role", this.role!);
