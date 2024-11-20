@@ -3,10 +3,11 @@ require 'sinatra'
 require 'time'
 require 'jwt'
 require 'debug'
+require 'dotenv/load'
 
-MY_SECRET_SIGNING_KEY = "your-256-bit-secret"
+class Main < Sinatra::Base
 
-class QotdApi < Sinatra::Base
+  # Gå igenom hela applikationen
 
   def initialize
     super
@@ -21,7 +22,7 @@ class QotdApi < Sinatra::Base
       return false unless jwt_bearer_token
       p "JWT bearer | #{jwt_bearer_token}"
       begin
-        @token = JWT.decode(jwt_bearer_token, MY_SECRET_SIGNING_KEY, false)
+        @token = JWT.decode(jwt_bearer_token, ENV['JWT_SECRET_SIGNING_KEY'], false)
         @user = @db.execute("SELECT * FROM users WHERE id = ?", @token.first['id']).first
         return !!@user
       rescue JWT::DecodeError => ex
@@ -74,11 +75,10 @@ class QotdApi < Sinatra::Base
   post '/api/v1/users/signin' do
     p "Signing in"
     user_data = JSON.parse(request.body.read)
-    user = @db.execute('SELECT * FROM users WHERE username = ?', user_data['username']).first
-
-    if user && BCrypt::Password.new(user['encrypted_password']) == user_data['password']
-      token = JWT.encode({ id: user['id'], issued_at: Time.now }, MY_SECRET_SIGNING_KEY)
-      { token: token }.to_json
+    user = @db.execute('SELECT * FROM users WHERE email = ?', user_data['email']).first
+    if user && BCrypt::Password.new(user['password']) == user_data['password']
+      token = JWT.encode({ id: user['id'], issued_at: Time.now }, ENV['JWT_SECRET_SIGNING_KEY'])
+      { token: token, role: user['role'] }.to_json
     else
       unauthorized_response
     end
