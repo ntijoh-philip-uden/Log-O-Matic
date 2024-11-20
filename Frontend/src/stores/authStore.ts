@@ -40,6 +40,8 @@ export const useAuthStore = defineStore("auth", {
           return;
         }
 
+        this.loginTries = 0;
+
         const data = (await response.json()) as { token: string; role: number };
         this.token = data.token;
         this.role = data.role.toString();
