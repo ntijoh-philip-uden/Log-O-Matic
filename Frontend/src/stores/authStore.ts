@@ -5,6 +5,7 @@ import router from "../router";
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: localStorage.getItem("token") as string | null,
+    username: localStorage.getItem("username") as string | null,
     role: localStorage.getItem("role") as string | null,
     loginTries: 1,
     error: null as string | null,
@@ -48,11 +49,18 @@ export const useAuthStore = defineStore("auth", {
 
         this.loginTries = 0;
 
-        const data = (await response.json()) as { token: string; role: number };
+        const data = (await response.json()) as {
+          token: string;
+          username: string;
+          role: number;
+        };
+
         this.token = data.token;
+        this.username = data.username;
         this.role = data.role.toString();
 
         localStorage.setItem("token", this.token!);
+        localStorage.setItem("username", this.username!);
         localStorage.setItem("role", this.role!);
 
         switch (this.role ? parseInt(this.role) : -1) {
@@ -75,10 +83,12 @@ export const useAuthStore = defineStore("auth", {
     },
     logout() {
       this.token = null;
+      this.username = null;
       this.role = null;
       this.error = null;
 
       localStorage.removeItem("token");
+      localStorage.removeItem("username");
       localStorage.removeItem("role");
 
       router.push("/Login");
