@@ -1,33 +1,58 @@
+<script lang="ts" setup>
+import router from "@/router";
+import { useAuthStore } from "@/stores/authStore";
+
+const authStore = useAuthStore();
+
+const isAuthenticated = ref(authStore.isAuthenticated);
+
+if (!isAuthenticated.value) {
+  switch (router.currentRoute.value.path) {
+    case "/Login":
+      break;
+    default:
+      router.push("/Login");
+      break;
+  }
+}
+
+const isAdmin = authStore.isAdmin;
+</script>
+
 <template>
   <v-app>
-
     <v-system-bar>
-        <v-icon icon="mdi-wifi-strength-4"></v-icon>
-        <v-icon icon="mdi-signal" class="ms-2"></v-icon>
-        <v-icon icon="mdi-battery" class="ms-2"></v-icon>
+      <v-icon icon="mdi-wifi-strength-4"></v-icon>
+      <v-icon icon="mdi-signal" class="ms-2"></v-icon>
+      <v-icon icon="mdi-battery" class="ms-2"></v-icon>
     </v-system-bar>
 
     <v-header>
       <v-app-bar :elevation="6">
-        <v-app-bar-title class="text-h5" @click="router.push('/')">Log-O-Matic</v-app-bar-title>
+        <v-app-bar-title class="text-h5" @click="router.push('/')"
+          >Log-O-Matic</v-app-bar-title
+        >
 
         <template v-slot:append>
-          <v-btn v-if="Token && Teacher" @click="router.push('/Admin')">
+          <v-btn
+            v-if="isAuthenticated && isAdmin"
+            @click="router.push('/admin')"
+          >
             <v-icon icon="mdi-cog" />
             Admin
           </v-btn>
 
-          <v-btn v-if="Token" @click="router.push('/Logs')">
+          <v-btn v-if="isAuthenticated" @click="router.push('/logs')">
             <v-icon icon="mdi-format-list-bulleted" />
             Logs
           </v-btn>
 
-          <v-btn v-if="!Token" @click="router.push('/Login')">
+          <v-btn v-if="!isAuthenticated" @click="router.push('/Login')">
             <v-icon icon="mdi-lock-open" />
             Sign in
           </v-btn>
 
-          <v-btn v-if="Token" @click="router.push('/Logout')">
+          <v-btn v-if="isAuthenticated" @click="authStore.logout()">
             <v-icon icon="mdi-lock" />
             Log out
           </v-btn>
@@ -41,9 +66,3 @@
     <AppFooter />
   </v-app>
 </template>
-
-<script lang="ts" setup>
-  import router from '@/router'
-  const Token = "1"
-  const Teacher = true
-</script>
