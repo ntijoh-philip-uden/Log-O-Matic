@@ -87,7 +87,7 @@ class Main < Sinatra::Base
     user = @db.execute('SELECT * FROM users WHERE email = ?', user_data['email']).first
     if user && BCrypt::Password.new(user['password']) == user_data['password']
       token = JWT.encode({ id: user['id'], issued_at: Time.now }, ENV['JWT_SECRET_SIGNING_KEY'])
-      { token: token, role: user['role'] }.to_json
+      { token: token, username: user['username'], role: user['role'] }.to_json
     else
       unauthorized_response
     end
