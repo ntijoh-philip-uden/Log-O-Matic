@@ -17,14 +17,23 @@ class Main < Sinatra::Base
 
   helpers do
 
-    def authenticated?
+    def authenticated?(requiredRoles = -1)
       jwt_bearer_token = env.fetch('HTTP_AUTHORIZATION', '').slice(7..-1)
       return false unless jwt_bearer_token
       p "JWT bearer | #{jwt_bearer_token}"
       begin
         @token = JWT.decode(jwt_bearer_token, ENV['JWT_SECRET_SIGNING_KEY'], false)
         @user = @db.execute("SELECT * FROM users WHERE id = ?", @token.first['id']).first
-        return !!@user
+
+        if requiredRoles == -1
+          return !!@user
+        elsif requiredRoles.is_a?(Integer) && @user["role"] <= requiredRoles
+          return !!@user
+        elsif requiredRoles.is_a?(Array) && requiredRoles.include?(@user["role"])
+          return !!@user
+        end
+
+        return false
       rescue JWT::DecodeError => ex
         return false
       end
