@@ -38,3 +38,6 @@ pnpm-debug.log*
 
 # Database 
 Backend/db/log-o-matic.db
+
+# Backend
+Backend/.env
