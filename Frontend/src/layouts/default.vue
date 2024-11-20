@@ -1,10 +1,13 @@
 <script lang="ts" setup>
-import router from "@/router";
+import { useRouter } from "vue-router";
+import { computed } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 
+const router = useRouter();
 const authStore = useAuthStore();
 
-const isAuthenticated = ref(authStore.isAuthenticated);
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isAdmin = computed(() => authStore.isAdmin);
 
 if (!isAuthenticated.value) {
   switch (router.currentRoute.value.path) {
@@ -15,8 +18,6 @@ if (!isAuthenticated.value) {
       break;
   }
 }
-
-const isAdmin = authStore.isAdmin;
 </script>
 
 <template>
