@@ -130,7 +130,8 @@ class Main < Sinatra::Base
           log_answers = @db.execute("SELECT * FROM logsanswers WHERE log_id = ?", log_id)
           question_ids = log_answers.map { |answer| answer['question_id'] }
           log_questions = @db.execute("SELECT * FROM questions WHERE id IN (#{question_ids.join(',')})")
-          return { status: 'success', data: { log: log_data, answers: log_answers, questions: log_questions } }.to_json
+          log_comments = @db.execute("SELECT * FROM comments WHERE log_id = ?", log_id)
+          return { status: 'success', data: { log: log_data, answers: log_answers, questions: log_questions, comments: log_comments } }.to_json
         else
           return { status: 'error', message: 'Log not found' }.to_json
         end
@@ -156,7 +157,8 @@ class Main < Sinatra::Base
         log_answers = @db.execute("SELECT * FROM logsanswers WHERE log_id IN (#{log_ids.join(',')})")
         question_ids = log_answers.map { |answer| answer['question_id'] }
         log_questions = @db.execute("SELECT * FROM questions WHERE id IN (#{question_ids.join(',')})")
-        return { status: 'success', data: { logs: log_data, answers: log_answers, questions: log_questions } }.to_json
+        log_comments = @db.execute("SELECT * FROM comments WHERE log_id IN (#{log_ids.join(',')})")
+        return { status: 'success', data: { logs: log_data, answers: log_answers, questions: log_questions, comments: log_comments } }.to_json
       end
   
       if month && day
@@ -171,7 +173,8 @@ class Main < Sinatra::Base
         log_answers = @db.execute("SELECT * FROM logsanswers WHERE log_id IN (#{log_ids.join(',')})")
         question_ids = log_answers.map { |answer| answer['question_id'] }
         log_questions = @db.execute("SELECT * FROM questions WHERE id IN (#{question_ids.join(',')})")
-        return { status: 'success', data: { logs: log_data, answers: log_answers, questions: log_questions } }.to_json
+        log_comments = @db.execute("SELECT * FROM comments WHERE log_id IN (#{log_ids.join(',')})")
+        return { status: 'success', data: { logs: log_data, answers: log_answers, questions: log_questions, comments: log_comments } }.to_json
       end
   
       { status: 'error', message: 'Insufficient data to fetch logs' }.to_json
