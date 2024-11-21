@@ -8,7 +8,8 @@
         </div>
         <!-- Sub-header -->
         <div class="d-flex justify-center">
-          <h4>Student Name</h4>
+          <h4>{{ authStore.username }}</h4>
+          <button @click="getLogs">FortniteKnapp</button>
         </div>
         <!-- Navigation -->
         <div class="d-flex justify-space-between align-center mt-4">
@@ -31,10 +32,18 @@
   
   <script lang="ts" setup>
   import { ref, computed, onMounted } from 'vue';
+  import { useAuthStore } from "@/stores/authStore";
+  import { API_BASE_URL } from "../../config";
+
+
+  const authStore = useAuthStore();
+
+  
   
   // Reactive state for current week and day
   const currentWeek = ref<number>(0); // Tracked week displayed
   const currentDay = ref<string>("Monday"); // Tracked day displayed
+  const currentLogData = ref<{ [key: string]: any }>({});
   
   // Track today's actual week and day
   const todayWeek = ref<number>(0); // Today's actual week
@@ -43,6 +52,56 @@
   // Days of the week (excluding weekends)
   const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   
+
+  //Function that fetches logs
+  async function getLogs() {
+  try {
+    // Use the existing reactive state for currentWeek and currentDay
+    const userId = authStore.role; // Assuming `userId` is stored in authStore
+    const week = currentWeek.value; // Use the current tracked week
+    const day = currentDay.value; // Use the current tracked day (e.g., "Monday")
+    const year = new Date().getFullYear(); // Add the current year if needed
+
+    // Prepare query parameters
+    const queryParams = new URLSearchParams({
+      user: userId.toString(),
+      week: week.toString(),
+      day, // Send the day as part of the request
+      year: year.toString(),
+    });
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/log?${queryParams.toString()}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authStore.token}`,
+      },
+    });
+
+    if (!response.ok) {
+      // Handle non-200 responses
+      const errorData = await response.json();
+      console.error("Failed to fetch logs:", errorData.message);
+      return;
+    }
+
+    //Data and consolologging of data
+    const logs = await response.json();
+    console.log("Fetched logs:", logs);
+    console.log("Here is the data of the log: ",logs.data)
+
+    if(logs.status == "success"){
+        currentLogData.value = logs.data 
+        console.log("this is the ref fortnite:",currentLogData.value['questions'][0]['question'])
+    }
+
+
+  } catch (err: any) {
+    console.error("Error fetching logs:", err);
+  }
+}
+
+
   // Function to calculate the current week of the year
   function calculateCurrentWeek(): number {
     const now: Date = new Date();
