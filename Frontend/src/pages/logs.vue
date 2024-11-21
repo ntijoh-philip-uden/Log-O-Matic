@@ -1,5 +1,10 @@
 <script lang="ts" setup>
 import LogCardComponent from "@/components/LogCardComponent.vue"
+import { useLogStore } from '@/stores/logStore';
+const logStore = useLogStore();
+logStore.fetchLogsByWeek('47')
+
+console.log(logStore.logs)
 
 const teacherName = 'Philip';
 
