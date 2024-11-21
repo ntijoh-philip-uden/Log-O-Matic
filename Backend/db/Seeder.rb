@@ -79,19 +79,19 @@ class Seeder
     
     # Users
     encrypted_password1 = BCrypt::Password.create("a");
-    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["a", encrypted_password1, "a.a@gmail.com", 1, 1]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["a", encrypted_password1, "a.a@gmail.com", 1, nil]);
 
     encrypted_password2 = BCrypt::Password.create("b");
-    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["b", encrypted_password2, "b.b@gmail.com", 2, 2]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["b", encrypted_password2, "b.b@gmail.com", 2, nil]);
 
     encrypted_password3 = BCrypt::Password.create("c");
-    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["c", encrypted_password3, "c.c@gmail.com", 3, nil]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["c", encrypted_password3, "c.c@gmail.com", 3, 1]);
 
     encrypted_password4 = BCrypt::Password.create("d");
-    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["d", encrypted_password4, "d.d@gmail.com", 3, nil]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["d", encrypted_password4, "d.d@gmail.com", 3, 1]);
 
     encrypted_password5 = BCrypt::Password.create("e");
-    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["e", encrypted_password5, "e.e@gmail.com", 3, nil]);
+    db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', ["e", encrypted_password5, "e.e@gmail.com", 3, 2]);
 
     # Logs
     db.execute('INSERT INTO logs (user_id) VALUES (?)', [3]);
