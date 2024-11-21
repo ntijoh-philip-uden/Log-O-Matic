@@ -44,11 +44,11 @@ class Main < Sinatra::Base
     end
 
     def is_teacher?(teacher_id)
-      !!@db.execute("SELECT * FROM users WHERE id = ? and role <= ?", teacher_id, 2).first
+      !!@db.execute("SELECT * FROM users WHERE id = ? and role <= ?", [teacher_id, 2]).first
     end
 
     def is_student?(student_id)
-      !!@db.execute("SELECT * FROM users WHERE id = ? and role = ?", student_id, 3).first
+      !!@db.execute("SELECT * FROM users WHERE id = ? and role = ?", [student_id, 3]).first
     end
 
     def unauthorized_response
@@ -113,6 +113,72 @@ class Main < Sinatra::Base
       unauthorized_response
     end
   end
+
+  get '/api/v1/log' do
+    log_id = params['id']
+    user_id = params['user']
+    week = params['week']
+    year = params['year']
+    month = params['month']
+    day = params['day']
+    p "Getting log"
+  
+    if authenticated?
+      if log_id
+        log_data = @db.execute("SELECT * FROM logs WHERE id = ?", log_id).first
+        if log_data
+          log_answers = @db.execute("SELECT * FROM logsanswers WHERE log_id = ?", log_id)
+          question_ids = log_answers.map { |answer| answer['question_id'] }
+          log_questions = @db.execute("SELECT * FROM questions WHERE id IN (#{question_ids.join(',')})")
+          return { status: 'success', data: { log: log_data, answers: log_answers, questions: log_questions } }.to_json
+        else
+          return { status: 'error', message: 'Log not found' }.to_json
+        end
+      end
+  
+      if user_id.nil? || (week.nil? && (month.nil? || day.nil?))
+        return { status: 'error', message: 'Missing required parameters' }.to_json
+      end
+
+      if !is_student?(user_id)
+        return { status: 'error', message: 'User is not a student' }.to_json
+      end
+  
+      if week
+        year ||= Date.today.year.to_s
+        log_data = @db.execute('SELECT * FROM logs WHERE user_id = ? AND strftime("%W", timestamp) = ? AND strftime("%Y", timestamp) = ?', [user_id, week, year])
+        
+        if log_data.empty?
+          return { status: 'error', message: 'No logs found for the specified week' }.to_json
+        end
+  
+        log_ids = log_data.map { |log| log['id'] }
+        log_answers = @db.execute("SELECT * FROM logsanswers WHERE log_id IN (#{log_ids.join(',')})")
+        question_ids = log_answers.map { |answer| answer['question_id'] }
+        log_questions = @db.execute("SELECT * FROM questions WHERE id IN (#{question_ids.join(',')})")
+        return { status: 'success', data: { logs: log_data, answers: log_answers, questions: log_questions } }.to_json
+      end
+  
+      if month && day
+        year ||= Date.today.year.to_s
+        log_data = @db.execute('SELECT * FROM logs WHERE user_id = ? AND strftime("%Y", timestamp) = ? AND strftime("%m", timestamp) = ? AND strftime("%d", timestamp) = ?', [user_id, year, month, day])
+        
+        if log_data.empty?
+          return { status: 'error', message: 'No logs found for the specified date' }.to_json
+        end
+  
+        log_ids = log_data.map { |log| log['id'] }
+        log_answers = @db.execute("SELECT * FROM logsanswers WHERE log_id IN (#{log_ids.join(',')})")
+        question_ids = log_answers.map { |answer| answer['question_id'] }
+        log_questions = @db.execute("SELECT * FROM questions WHERE id IN (#{question_ids.join(',')})")
+        return { status: 'success', data: { logs: log_data, answers: log_answers, questions: log_questions } }.to_json
+      end
+  
+      { status: 'error', message: 'Insufficient data to fetch logs' }.to_json
+    else
+      { status: 'error', message: 'Unauthorized' }.to_json
+    end
+  end  
 
   post '/api/v1/users/signin' do
     p "Signing in"
