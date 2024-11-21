@@ -40,11 +40,11 @@ class Main < Sinatra::Base
     end
 
     def is_teacher?(teacher_id)
-      !!@db.execute("SELECT * FROM users WHERE id = ? and role <= ?", teacher_id, 2).first
+      !!@db.execute("SELECT * FROM users WHERE id = ? and role <= ?", [teacher_id, 2]).first
     end
 
     def is_student?(student_id)
-      !!@db.execute("SELECT * FROM users WHERE id = ? and role = ?", student_id, 3).first
+      !!@db.execute("SELECT * FROM users WHERE id = ? and role = ?", [student_id, 3]).first
     end
 
     def unauthorized_response
@@ -219,11 +219,11 @@ class Main < Sinatra::Base
       if !user_data['id'] || !user_data['password'] || !user_id_exist?(user_data['id'])
         return unfulfilled_requirements
       end
-  
+
       encrypted_password = BCrypt::Password.create(user_data['password'])
-  
+      p user_data['id']
       begin
-        @db.execute('UPDATE users SET password = ? WHERE id = ?', encrypted_password, user_data['id'])
+        @db.execute('UPDATE users SET password = ? WHERE id = ?', [encrypted_password, user_data['id']])
         { message: 'Password successfully reset' }.to_json
       rescue SQLite3::ConstraintException
         halt 400, { error: 'Password reset failed: Unable to update the database.' }.to_json
@@ -243,7 +243,7 @@ class Main < Sinatra::Base
       end
   
       begin
-        @db.execute('UPDATE users SET teacher_id = ? WHERE id = ?', user_data['teacherId'], user_data['id'])
+        @db.execute('UPDATE users SET teacher_id = ? WHERE id = ?', [user_data['teacherId'], user_data['id']])
         { message: 'Teacher successfully changed' }.to_json
       rescue SQLite3::ConstraintException => e
         halt 400, { error: 'Failed to change teacher: User ID or teacher ID may not exist.' }.to_json
