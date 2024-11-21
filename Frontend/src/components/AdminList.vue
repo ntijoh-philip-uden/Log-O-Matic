@@ -1,63 +1,54 @@
 <script lang="ts" setup>
-import { ref, defineProps, computed, watch } from "vue";
-import { useTeachersStore } from "@/stores/teacherStore";
-import { useStudentsStore } from "@/stores/studentStore";
+import { ref, defineProps, computed, onMounted } from "vue";
+import { useUserStore } from "@/stores/userStore";
 
 // Define the component's props
 const props = defineProps({
   type: {
     type: String,
-    required: true, // Required prop to specify whether handling 'teacher' or 'student'
+    required: true,
   },
 });
 
-// Stores for managing teachers and students
-const teacherStore = useTeachersStore();
-const studentStore = useStudentsStore();
+const userStore = useUserStore();
 
-// Headers for the teachers table
+// Headers for the tables
 const teachersHeaders = [
   { title: "Name", key: "name" },
   { title: "Email", key: "email" },
-  { title: "", key: "exclusive", sortable: false }, // For actions like password reset
+  { title: "", key: "exclusive", sortable: false },
 ];
-
-// Headers for the students table
 const studentsHeaders = [
   { title: "Name", key: "name" },
   { title: "Email", key: "email" },
-  { title: "Teacher", key: "teacher", sortable: false }, // Assign teacher
-  { title: "", key: "exclusive", sortable: false }, // For actions like password reset
+  { title: "Teacher", key: "teacher", sortable: false },
+  { title: "", key: "exclusive", sortable: false },
 ];
 
-// Reactive data for teachers and students
-const teachers = ref(teacherStore.teachers);
-const students = ref(studentStore.students);
+// Reactive references for teachers and students lists
+const teachers = computed(() => userStore.allTeachers);
+const students = computed(() => userStore.allStudents);
 
-// Loading state for async operations
 const loading = ref(false);
-
-// Inputs for managing passwords and teacher assignments
 const teacherPasswordInputs = ref<Record<number, string>>({});
 const studentPasswordInputs = ref<Record<number, string>>({});
 
-// Compute a mapping of student IDs to their assigned teacher IDs
+// For managing teacher assignments
 const studentTeacherInputs = computed(() =>
   students.value.reduce((acc: Record<number, number>, student) => {
-    acc[student.id] = student.teacherId;
+    acc[student.id] = student.teacherId ?? null;
     return acc;
   }, {})
 );
 
-// Function to reset a teacher's password
 async function handleResetTeacherPassword(idToReset: number) {
   loading.value = true;
   try {
-    await teacherStore.resetPassword(
-      teachers.value[idToReset],
+    await userStore.resetPassword(
+      idToReset,
       teacherPasswordInputs.value[idToReset]
     );
-    teacherPasswordInputs.value[idToReset] = ""; // Clear input on success
+    teacherPasswordInputs.value[idToReset] = "";
   } catch (error) {
     console.error("Error resetting teacher password:", error);
   } finally {
@@ -65,19 +56,33 @@ async function handleResetTeacherPassword(idToReset: number) {
   }
 }
 
-// Function to reset a student's password and change their teacher assignment
+async function changeTeacher(studentId: number) {
+  const newTeacherId = studentTeacherInputs.value[studentId];
+  await userStore.changeTeacher(studentId, newTeacherId);
+
+  // Directly update the student data in the local state
+  const studentIndex = students.value.findIndex(
+    (student) => student.id === studentId
+  );
+  if (studentIndex !== -1) {
+    students.value[studentIndex] = {
+      ...students.value[studentIndex],
+      teacherId: newTeacherId,
+      name:
+        teachers.value.find((teacher) => teacher.id === newTeacherId)?.name ||
+        "No Teacher Assigned",
+    };
+  }
+}
+
 async function handleResetStudentPassword(idToReset: number) {
   loading.value = true;
   try {
-    await studentStore.resetPassword(
-      students.value[idToReset],
+    await userStore.resetPassword(
+      idToReset,
       studentPasswordInputs.value[idToReset]
     );
-    await studentStore.changeTeacher(
-      students.value[idToReset],
-      studentTeacherInputs.value[idToReset]
-    );
-    studentPasswordInputs.value[idToReset] = ""; // Clear input on success
+    studentPasswordInputs.value[idToReset] = "";
   } catch (error) {
     console.error("Error resetting student password:", error);
   } finally {
@@ -85,20 +90,14 @@ async function handleResetStudentPassword(idToReset: number) {
   }
 }
 
-// Watch for changes in the students array and log updates
-watch(
-  () => students.value,
-  (newStudents) => {
-    console.log("Students updated:", newStudents);
-  },
-  { deep: true } // Deep watch to detect nested changes
-);
+// Initial load of users
+onMounted(async () => {
+  await userStore.loadUsers();
+});
 </script>
 
 <template>
-  <!-- Main card container -->
   <v-card class="mt-4">
-    <!-- Header displaying the entity type -->
     <v-container>
       <v-app-bar-title class="text-h5">
         {{ props.type === "teacher" ? "Teachers" : "Students" }}
@@ -113,7 +112,6 @@ watch(
         :headers="teachersHeaders"
         hide-default-footer
       >
-        <!-- Slot for password reset functionality -->
         <template v-slot:item.exclusive="{ item }">
           <v-form
             @submit.prevent="handleResetTeacherPassword(item.id)"
@@ -129,7 +127,6 @@ watch(
                   hide-details="auto"
                   type="password"
                 >
-                  <!-- Append reset button -->
                   <template v-slot:append>
                     <v-btn
                       variant="outlined"
@@ -155,7 +152,6 @@ watch(
         :headers="studentsHeaders"
         hide-default-footer
       >
-        <!-- Slot for assigning teachers -->
         <template v-slot:item.teacher="{ item }">
           <v-select
             v-model="studentTeacherInputs[item.id]"
@@ -163,10 +159,10 @@ watch(
             item-title="name"
             item-value="id"
             hide-details="auto"
+            @update:model-value="changeTeacher(item.id)"
           ></v-select>
         </template>
 
-        <!-- Slot for password reset functionality -->
         <template v-slot:item.exclusive="{ item }">
           <v-form
             @submit.prevent="handleResetStudentPassword(item.id)"
@@ -182,7 +178,6 @@ watch(
                   hide-details="auto"
                   type="password"
                 >
-                  <!-- Append reset button -->
                   <template v-slot:append>
                     <v-btn
                       variant="outlined"
