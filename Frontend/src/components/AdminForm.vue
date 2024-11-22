@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 // Import required Vue and store modules
-import { ref, defineProps } from "vue";
-import { useTeachersStore } from "@/stores/teacherStore";
-import { useStudentsStore } from "@/stores/studentStore";
+import { ref, defineProps, computed, onMounted } from "vue";
+import { useUserStore } from "@/stores/userStore";
 
 // Define component props
 const props = defineProps({
@@ -13,8 +12,7 @@ const props = defineProps({
 });
 
 // Initialize teacher and student stores
-const teacherStore = useTeachersStore();
-const studentStore = useStudentsStore();
+const userStore = useUserStore();
 
 // Loading state to disable inputs while submitting
 const loading = ref(false);
@@ -24,21 +22,24 @@ const newTeacher = ref({ email: "", name: "", password: "" });
 const newStudent = ref({ email: "", name: "", teacher: "", password: "" });
 
 // List of teachers to populate the dropdown in the student form
-const teachers = teacherStore.teachers;
+const teachers = computed(() => userStore.allTeachers);
 
 // Function to handle adding a new teacher
 async function handleAddTeacher() {
   loading.value = true; // Start loading state
   try {
-    await teacherStore.addNew(
+    await userStore.addNew(
       newTeacher.value.email,
       newTeacher.value.name,
-      newTeacher.value.password
+      newTeacher.value.password,
+      2,
+      null
     );
-    newTeacher.value = { email: "", name: "", password: "" }; // Clear form on success
   } catch (error) {
     console.error("Error adding teacher:", error);
   } finally {
+    newTeacher.value = { email: "", name: "", password: "" }; // Clear form on success
+    await userStore.loadUsers();
     loading.value = false; // End loading state
   }
 }
@@ -47,16 +48,18 @@ async function handleAddTeacher() {
 async function handleAddStudent() {
   loading.value = true; // Start loading state
   try {
-    await studentStore.addNew(
+    await userStore.addNew(
       newStudent.value.email,
       newStudent.value.name,
       newStudent.value.password,
+      3,
       parseInt(newStudent.value.teacher)
     );
-    newStudent.value = { email: "", name: "", teacher: "", password: "" }; // Clear form on success
   } catch (error) {
     console.error("Error adding student:", error);
   } finally {
+    newStudent.value = { email: "", name: "", teacher: "", password: "" }; // Clear form on success
+    await userStore.loadUsers();
     loading.value = false; // End loading state
   }
 }
@@ -68,7 +71,9 @@ const emailRules = ref([
     return !!v || "Email is required"; // Check if input is non-empty
   },
   (v: string) =>
-    loading.value || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) || "Enter a valid email address", // Validate email format
+    loading.value ||
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v) ||
+    "Enter a valid email address", // Validate email format
 ]);
 
 const nameRules = ref([
@@ -82,6 +87,11 @@ const passwordRules = ref([
 const teacherRules = ref([
   (v: string) => loading.value || !!v || "Teacher is required", // Ensure teacher selection is made
 ]);
+
+// Initial load of users
+onMounted(async () => {
+  await userStore.loadUsers();
+});
 </script>
 
 <template>
@@ -218,4 +228,3 @@ const teacherRules = ref([
     </v-container>
   </v-card>
 </template>
-
