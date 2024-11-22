@@ -39,6 +39,10 @@ class Main < Sinatra::Base
       !!@db.execute('SELECT * FROM users WHERE id = ?', id).first
     end
 
+    def user_email_exist?(email)
+      !!@db.execute('SELECT * FROM users WHERE email = ?', email).first
+    end
+
     def is_teacher?(teacher_id)
       !!@db.execute("SELECT * FROM users WHERE id = ? and role <= ?", [teacher_id, 2]).first
     end
@@ -194,6 +198,21 @@ class Main < Sinatra::Base
       return { status: 'success', data: { logs: log_data, **associated_data } }.to_json
     else
       return { status: 'error', message: 'Unauthorized' }.to_json
+    end
+  end
+
+  post '/api/v1/users' do
+    p "Adding user"
+    if authenticated?(1)
+      user_data = JSON.parse(request.body.read)
+      if !user_data['email'] || !user_data['name'] || !user_data['password'] || !user_data['role'] || user_email_exist?(user_data['email'])
+        return unfulfilled_requirements
+      end
+
+      encrypted_password = BCrypt::Password.create(user_data['password'])
+      @db.execute('INSERT INTO users (username, password, email, role, teacher_id) VALUES (?, ?, ?, ?, ?)', [user_data['name'], encrypted_password, user_data['email'], user_data['role'], user_data['teacherId']])
+    else
+      unauthorized_response
     end
   end
 

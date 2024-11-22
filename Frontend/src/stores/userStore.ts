@@ -122,7 +122,7 @@ export const useUserStore = defineStore("users", {
       name: string,
       password: string,
       role: number,
-      teacherId: number
+      teacherId: number | null
     ) {
       await this.fetchWithAuth(`${API_BASE_URL}/api/v1/users`, {
         method: "POST",
