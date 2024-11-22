@@ -2,16 +2,17 @@
 import { defineProps } from "vue";
 import router from "@/router";
 
-interface IStudents {
+interface IStudents1 {
   id: number;
   name: string;
-  teacher: string;
   status: string[];
   comments: number[];
 }
 
+
 const props = defineProps<{
-  Students: readonly IStudents[];
+  Students: IStudents1[];
+  yourStudents: boolean
 }>();
 
 type Header = {
@@ -28,8 +29,7 @@ const headers: Header[] = [
   { title: "Fredag", key: "friday" },
 ];
 
-// Router navigation functions
-function goTodayLogs(day: string | "name") {
+function goTodayLogs(day: string) {
   router.push(`/logs/day?day=${encodeURIComponent(day)}`);
 }
 
@@ -37,16 +37,22 @@ function goToStudentsLogs(student: string) {
   router.push(`/logs/students/?student=${encodeURIComponent(student)}`);
 }
 
-function goToLogs(student: string, day: string | "name") {
-  router.push(`/logs/students/day?student=${encodeURIComponent(student)}&day=${encodeURIComponent(day)}`);
+function goToLogs(student: string, day: string) {
+  router.push(
+    `/logs/students/day?student=${encodeURIComponent(student)}&day=${encodeURIComponent(
+      day
+    )}`
+  );
 }
+
 </script>
 
 
 
 <template>
     <v-card>
-      <v-card-title class="text-h6">Your Students</v-card-title>
+      <v-card-title class="text-h6" v-if="yourStudents">Your Students</v-card-title>
+      <v-card-title class="text-h6" v-if="!yourStudents">All Other Students</v-card-title>
       <v-card-text>
         <v-data-table
           :headers="headers"
