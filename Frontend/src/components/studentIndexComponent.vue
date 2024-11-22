@@ -38,7 +38,12 @@
   <script lang="ts" setup>
   import { ref, computed, onMounted } from 'vue';
   import { useAuthStore } from "@/stores/authStore";
-  import { API_BASE_URL } from "../../config";
+  import { useUserStore } from '@/stores/userStore';
+  import { useLogStore } from '@/stores/logStore';
+import { c } from 'node_modules/unplugin-vue-router/dist/types-DBiN4-4c';
+  
+  const logStore = useLogStore();
+  const userStore = useUserStore();
   
   const authStore = useAuthStore();
   
@@ -85,59 +90,68 @@
   
   // Function that fetches logs
   async function getLogs() {
-    try {
-      const userId = authStore.role; // Assuming userId is stored in authStore
-      const week = currentWeek.value; // Use the current tracked week
-      const dayName = currentDay.value; // Use the current tracked day (e.g., "Monday")
+    // try {
+    //   const userId = authStore.role; // Assuming userId is stored in authStore
+    //   const week = currentWeek.value; // Use the current tracked week
+    //   const dayName = currentDay.value; // Use the current tracked day (e.g., "Monday")
   
-      // Derive today's date from the current week and day
-      const today = new Date(); // Get current date
-      const startOfYear = new Date(today.getFullYear(), 0, 1); // Start of the year
-      const dayOfYear = (week - 1) * 7 + weekdays.indexOf(dayName) + 1; // Approximate day of the year
-      const logDate = new Date(startOfYear.setDate(dayOfYear)); // Calculate the actual date
+    //   // Derive today's date from the current week and day
+    //   const today = new Date(); // Get current date
+    //   const startOfYear = new Date(today.getFullYear(), 0, 1); // Start of the year
+    //   const dayOfYear = (week - 1) * 7 + weekdays.indexOf(dayName) + 1; // Approximate day of the year
+    //   const logDate = new Date(startOfYear.setDate(dayOfYear)); // Calculate the actual date
       
-      // Extract year, month, and day in the expected format
-      const year = logDate.getFullYear().toString();
-      const month = (logDate.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
-      const day = logDate.getDate().toString().padStart(2, '0');
+    //   // Extract year, month, and day in the expected format
+    //   const year = logDate.getFullYear().toString();
+    //   const month = (logDate.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+    //   const day = logDate.getDate().toString().padStart(2, '0');
   
-      console.log(`Fetching logs for: Year=${year}, Month=${month}, Day=${day}, Week=${week}`);
+    //   console.log(`Fetching logs for: Year=${year}, Month=${month}, Day=${day}, Week=${week}`);
   
-      // Prepare query parameters
-      const queryParams = new URLSearchParams({
-        user: userId.toString(),
-        week: week.toString(),
-        year, // Send the year in YYYY format
-        month, // Send the month in MM format
-        day, // Send the day in DD format
-      });
+    //   // Prepare query parameters
+    //   const queryParams = new URLSearchParams({
+    //     user: userId.toString(),
+    //     week: week.toString(),
+    //     year, // Send the year in YYYY format
+    //     month, // Send the month in MM format
+    //     day, // Send the day in DD format
+    //   });
   
-      const response = await fetch(`${API_BASE_URL}/api/v1/log?${queryParams.toString()}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authStore.token}`,
-        },
-      });
+    //   const response = await fetch(`${API_BASE_URL}/api/v1/log?${queryParams.toString()}`, {
+    //     method: "GET",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: `Bearer ${authStore.token}`,
+    //     },
+    //   });
   
-      if (!response.ok) {
-        // Handle non-200 responses
-        const errorData = await response.json();
-        console.error("Failed to fetch logs:", errorData.message);
-        return;
-      }
+    //   if (!response.ok) {
+    //     // Handle non-200 responses
+    //     const errorData = await response.json();
+    //     console.error("Failed to fetch logs:", errorData.message);
+    //     return;
+    //   }
   
-      // Data and logging
-      const logs = await response.json();
-      console.log("Fetched logs:", logs);
+    //   // Data and logging
+    //   const logs = await response.json();
+    //   console.log("Fetched logs:", logs);
   
-      if (logs.status === "success" && logs.data) {
-        currentLogData.value = logs.data;
-        console.log("The data in currentLogData: ", currentLogData.value)
-      }
-    } catch (err: any) {
-      console.error("Error fetching logs:", err);
-    }
+    //   if (logs.status === "success" && logs.data) {
+    //     currentLogData.value = logs.data;
+    //     console.log("The data in currentLogData: ", currentLogData.value)
+    //   }
+    // } catch (err: any) {
+    //   console.error("Error fetching logs:", err);
+    // }
+
+
+    //Other method
+    //logStore.fetchLogsByWeekAndUser( userStore., currentWeek.value)
+    await userStore.loadUsers();
+    const loggedInUserId = userStore.byName(authStore.username)[0]['id']
+    console.log(loggedInUserId)
+    console.log(logStore.fetchLogsByWeekAndUser(loggedInUserId, currentWeek.value.toString()))
+    
   }
   
   // Function to calculate the current week of the year
