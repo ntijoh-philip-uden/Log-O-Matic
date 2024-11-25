@@ -150,7 +150,9 @@ import { c } from 'node_modules/unplugin-vue-router/dist/types-DBiN4-4c';
     await userStore.loadUsers();
     const loggedInUserId = userStore.byName(authStore.username)[0]['id']
     console.log(loggedInUserId)
-    console.log(logStore.fetchLogsByWeekAndUser(loggedInUserId, currentWeek.value.toString()))
+    console.log(currentWeek.value)
+    await logStore.fetchLogsByWeekAndUser(loggedInUserId, currentWeek.value.toString())
+    console.log(logStore.logs)
     
   }
   

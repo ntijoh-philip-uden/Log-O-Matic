@@ -75,7 +75,7 @@ export const useLogStore = defineStore('logStore', {
       this.error = null;
 
       try {
-        const response = await fetch(`http://localhost:9292/api/v1/log?id=${userId}&week=${week}&year=${year}`, {
+        const response = await fetch(`http://127.0.0.1:9292/api/v1/log?user=${userId}&week=${week}&year=${year}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export const useLogStore = defineStore('logStore', {
         }
 
         const data = await response.json();
-        this.logs = data.data.logs || []; // Store the logs in the state
+        this.logs = data.data.log || []; // Store the logs in the state
       } catch (error: any) {
         this.error = error.message || 'An unknown error occurred';
       } finally {
