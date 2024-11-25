@@ -1,77 +1,42 @@
-<template>
-    <v-container class="text-center" style="max-width: 600px;">
-      <!-- Card -->
-      <v-card elevation="2" class="pa-4">
-        <!-- Header -->
-        <div class="d-flex justify-center">
-          <h3>Week {{ currentWeek }}</h3>
-        </div>
-        <!-- Sub-header -->
-        <div class="d-flex justify-center">
-          <h4>{{ authStore.username }}</h4>
-          <button @click="getLogs">FortniteKnapp</button>
-        </div>
-        <!-- Navigation -->
-        <div class="d-flex justify-space-between align-center mt-4">
-          <!-- Left Arrow Button -->
-          <v-btn icon @click="prevDay">
-            <v-icon>mdi-chevron-left</v-icon>
-          </v-btn>
   
-          <!-- Day Label -->
-          <span>{{ currentDay }}</span>
-  
-          <!-- Right Arrow Button -->
-          <v-btn icon @click="nextDay" :disabled="isAtFutureLimit">
-            <v-icon>mdi-chevron-right</v-icon>
-          </v-btn>
-        </div>
-  
-        <!-- Display Questions and Answers -->
-         <h1>Here is the questions: {{ currentLogData.questions }}</h1>
-      
-      </v-card>
-    </v-container>
-  </template>
-  
-  
-  <script lang="ts" setup>
+<script lang="ts" setup>
   import { ref, computed, onMounted } from 'vue';
   import { useAuthStore } from "@/stores/authStore";
   import { useUserStore } from '@/stores/userStore';
   import { useLogStore } from '@/stores/logStore';
-import { c } from 'node_modules/unplugin-vue-router/dist/types-DBiN4-4c';
+import { tryStatement } from '@babel/types';
   
   const logStore = useLogStore();
   const userStore = useUserStore();
-  
   const authStore = useAuthStore();
   
   // Reactive state for current week and day
   const currentWeek = ref<number>(0); // Tracked week displayed
   const currentDay = ref<string>("Monday"); // Tracked day displayed
-    const currentLogData = ref({
-  logs: [
-    {
-      id: 1,
-      user_id: 3,
-      timestamp: '2024-11-20 12:14:35',
-    },
-  ],
-  answers: [
-    { id: 1, log_id: 1, question_id: 1, answer: '1 lorem' },
-    { id: 2, log_id: 1, question_id: 2, answer: '1 lorem ipsum' },
-    { id: 3, log_id: 1, question_id: 3, answer: '1 lorem ipsum banan' },
-    { id: 4, log_id: 1, question_id: 4, answer: '1 lorem ipsum banan kaka' },
-  ],
-  questions: [
-    { id: 1, question: 'Vad har du gjort under dagen?' },
-    { id: 2, question: 'Vad har du lärt dig?' },
-    { id: 3, question: 'Vad förstod du inte / Vilka frågor har du inte fått svar på?' },
-    { id: 4, question: 'Vad vill du lära dig mer om?' },
-  ],
-});
   
+  interface Question {
+    id: number;
+    value: string;
+  }
+  
+  interface Answer {
+    id: number;
+    value: string;
+  }
+  
+  // Define the structure for each log entry
+  interface LogEntry {
+    questions: Question;
+    answers: Answer;
+  }
+  
+  // Initialize `currentLogData` as a reactive array of `LogEntry` objects
+  const currentLogData = ref<LogEntry[]>([
+    {
+      questions: { id: 1, value: 'What is Vue?' },
+      answers: { id: 1, value: 'A progressive JavaScript framework.' },
+    },
+  ]);
   
   // Track today's actual week and day
   const todayWeek = ref<number>(0); // Today's actual week
@@ -80,80 +45,91 @@ import { c } from 'node_modules/unplugin-vue-router/dist/types-DBiN4-4c';
   // Days of the week (excluding weekends)
   const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   
-  // Array to store question objects (with placeholder answers)
-//   const questions = ref<{ text: string; answer: string }[]>([
-//     { text: "question1", answer: "" },
-//     { text: "question2", answer: "" },
-//     { text: "question3", answer: "" },
-//     { text: "question4", answer: "" },
-//   ]);
-  
   // Function that fetches logs
   async function getLogs() {
-    // try {
-    //   const userId = authStore.role; // Assuming userId is stored in authStore
-    //   const week = currentWeek.value; // Use the current tracked week
-    //   const dayName = currentDay.value; // Use the current tracked day (e.g., "Monday")
+    try {
+      await userStore.loadUsers();
+      const loggedInUser = userStore.byName(authStore.username)[0];
+      if (!loggedInUser) {
+        console.error("Logged-in user not found");
+        return;
+      }
   
-    //   // Derive today's date from the current week and day
-    //   const today = new Date(); // Get current date
-    //   const startOfYear = new Date(today.getFullYear(), 0, 1); // Start of the year
-    //   const dayOfYear = (week - 1) * 7 + weekdays.indexOf(dayName) + 1; // Approximate day of the year
-    //   const logDate = new Date(startOfYear.setDate(dayOfYear)); // Calculate the actual date
-      
-    //   // Extract year, month, and day in the expected format
-    //   const year = logDate.getFullYear().toString();
-    //   const month = (logDate.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
-    //   const day = logDate.getDate().toString().padStart(2, '0');
+      const userId = loggedInUser.id; // Logged-in user's ID
+      const week = currentWeek.value.toString();
   
-    //   console.log(`Fetching logs for: Year=${year}, Month=${month}, Day=${day}, Week=${week}`);
+      logStore.logs = [];
+      console.log(week);
+      await logStore.fetchLogsByWeek(week);
+      console.log("This is the logs in state: ", logStore.logs);
   
-    //   // Prepare query parameters
-    //   const queryParams = new URLSearchParams({
-    //     user: userId.toString(),
-    //     week: week.toString(),
-    //     year, // Send the year in YYYY format
-    //     month, // Send the month in MM format
-    //     day, // Send the day in DD format
-    //   });
+      // Filter logs for the logged-in user
+      const userLogs = logStore.logs.filter(log => log.user_id === userId);
   
-    //   const response = await fetch(`${API_BASE_URL}/api/v1/log?${queryParams.toString()}`, {
-    //     method: "GET",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${authStore.token}`,
-    //     },
-    //   });
+      // Further filter logs to match the current day
+      const dayLogs = userLogs.filter(log => {
+        const logDate = new Date(log.timestamp);
+        const logDay = weekdays[logDate.getDay() - 1]; // Get day as a string (e.g., "Monday")
+        return logDay === currentDay.value;
+      });
   
-    //   if (!response.ok) {
-    //     // Handle non-200 responses
-    //     const errorData = await response.json();
-    //     console.error("Failed to fetch logs:", errorData.message);
-    //     return;
-    //   }
+      // Debugging the filtered logs
+      console.log("Filtered logs for current day:", dayLogs);
+      console.log("This is the answers: ", logStore.answers);
   
-    //   // Data and logging
-    //   const logs = await response.json();
-    //   console.log("Fetched logs:", logs);
+      // Clear currentLogData before adding new entries
+      currentLogData.value = [];
   
-    //   if (logs.status === "success" && logs.data) {
-    //     currentLogData.value = logs.data;
-    //     console.log("The data in currentLogData: ", currentLogData.value)
-    //   }
-    // } catch (err: any) {
-    //   console.error("Error fetching logs:", err);
-    // }
-
-
-    //Other method
-    //logStore.fetchLogsByWeekAndUser( userStore., currentWeek.value)
-    await userStore.loadUsers();
-    const loggedInUserId = userStore.byName(authStore.username)[0]['id']
-    console.log(loggedInUserId)
-    console.log(currentWeek.value)
-    await logStore.fetchLogsByWeekAndUser(loggedInUserId, currentWeek.value.toString())
-    console.log(logStore.logs)
-    
+      // Wrap the loop in a try-catch
+      try {
+        for (let i = 0; i < logStore.questions.length; i++) {
+          const question: any = logStore.questions[i]; // Access the current question object
+  
+          if (!question) {
+            console.warn(`Missing data for question at index ${i}`);
+            continue;
+          }
+  
+          // Log the question for debugging
+          console.log(`id: ${question.id}, Value: ${question.question}`);
+  
+          // Get corresponding answers
+          try {
+            if (logStore.answers.length === 0) {
+              console.warn("No answers found in logStore.answers");
+            }
+  
+            for (let j = 0; j < logStore.answers.length; j++) {
+              const answer = logStore.answers[j];
+  
+              // Check for matching log ID and question ID
+              if (answer.log_id === dayLogs[0]?.id && answer.question_id === question.id) {
+                // Add question and corresponding answer to currentLogData
+                currentLogData.value.push({
+                  questions: {
+                    id: question.id,
+                    value: question.question,
+                  },
+                  answers: {
+                    id: answer.id,
+                    value: answer.answer,
+                  },
+                });
+              }
+            }
+          } catch (error) {
+            console.error("Error processing answers:", error);
+          }
+        }
+      } catch (error) {
+        console.error("Error processing questions:", error);
+      }
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+    }
+  
+    // Successfully pushed to currentLogData!
+    console.log(currentLogData.value);
   }
   
   // Function to calculate the current week of the year
@@ -224,9 +200,72 @@ import { c } from 'node_modules/unplugin-vue-router/dist/types-DBiN4-4c';
   // Initialize today's data when the component is mounted
   onMounted(() => {
     initializeToday();
-    
+    try{logStore.logs = []}
+    catch{console.log("There was an error intiting logs")}
+    getLogs();
   });
-  </script>
+</script>
+
+<template>
+    <v-container class="text-center" style="max-width: 600px;">
+      <!-- Header Card -->
+      <v-card elevation="2" class="pa-4">
+        <!-- Header -->
+        <div class="d-flex justify-center">
+          <h3>Week {{ currentWeek }}</h3>
+        </div>
+        <!-- Sub-header -->
+        <div class="d-flex justify-center">
+          <h4>{{ authStore.username }}</h4>
+        </div>
+        <!-- Navigation -->
+        <div class="d-flex justify-space-between align-center mt-4">
+          <!-- Left Arrow Button -->
+          <v-btn icon @click="prevDay">
+            <v-icon>mdi-chevron-left</v-icon>
+          </v-btn>
+  
+          <!-- Day Label -->
+          <span>{{ currentDay }}</span>
+  
+          <!-- Right Arrow Button -->
+          <v-btn icon @click="nextDay" :disabled="isAtFutureLimit">
+            <v-icon>mdi-chevron-right</v-icon>
+          </v-btn>
+        </div>
+      </v-card>
+  
+      <!-- Display Questions and Answers -->
+      <div v-if="currentLogData.length" class="mt-4">
+        <div
+          v-for="(log, index) in currentLogData"
+          :key="index"
+          class="mb-4"
+        >
+          <!-- Combined Question and Answer Card -->
+          <v-card elevation="1" class="pa-4">
+            <!-- Question -->
+            <h5 class="font-weight-bold text-left">
+              {{ log.questions.value }}
+            </h5>
+            <!-- Divider Line -->
+            <v-divider class="my-2"></v-divider>
+            <!-- Answer -->
+            <p class="text-body-2 text-left">
+              {{ log.answers.value }}
+            </p>
+          </v-card>
+        </div>
+      </div>
+  
+      <!-- Message if no logs -->
+      <div v-else class="mt-4">
+        <v-card elevation="2" class="pa-4">
+          <p>No logs available for the selected day.</p>
+        </v-card>
+      </div>
+    </v-container>
+  </template>
   
   <style scoped>
   h3,
@@ -234,4 +273,6 @@ import { c } from 'node_modules/unplugin-vue-router/dist/types-DBiN4-4c';
     margin: 0;
   }
   </style>
+  
+  
   
