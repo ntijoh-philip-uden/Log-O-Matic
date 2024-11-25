@@ -73,7 +73,7 @@ export const useAuthStore = defineStore("auth", {
             router.push("/admin");
             break;
           case 2:
-            router.push("/logs");
+            router.push("/logs/logs");
             break;
           case 3:
             router.push("/studentindex");
