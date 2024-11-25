@@ -6,19 +6,21 @@ export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: localStorage.getItem("token") as string | null,
     username: localStorage.getItem("username") as string | null,
-    role: localStorage.getItem("role") as string | null,
+    userId: localStorage.getItem("userId")
+      ? parseInt(localStorage.getItem("userId")!, 10)
+      : null,
+    role: localStorage.getItem("role")
+      ? parseInt(localStorage.getItem("role")!, 10)
+      : null,
     loginTries: 1,
     error: null as string | null,
   }),
 
   getters: {
     isAuthenticated: (state) => !!state.token && !!state.role,
-    isAdmin: (state) => (state.role ? parseInt(state.role) == 1 : false),
-    isTeacher: (state) =>
-      state.role
-        ? parseInt(state.role) == 2 && parseInt(state.role) == 1
-        : false,
-    isStudent: (state) => (state.role ? parseInt(state.role) == 3 : false),
+    isAdmin: (state) => state.role === 1,
+    isTeacher: (state) => state.role === 2,
+    isStudent: (state) => state.role === 3,
   },
 
   actions: {
@@ -52,18 +54,21 @@ export const useAuthStore = defineStore("auth", {
         const data = (await response.json()) as {
           token: string;
           username: string;
+          id: number;
           role: number;
         };
 
         this.token = data.token;
         this.username = data.username;
-        this.role = data.role.toString();
+        this.userId = data.id;
+        this.role = data.role;
 
         localStorage.setItem("token", this.token!);
         localStorage.setItem("username", this.username!);
-        localStorage.setItem("role", this.role!);
+        localStorage.setItem("UserId", this.userId!.toString());
+        localStorage.setItem("role", this.role!.toString());
 
-        switch (this.role ? parseInt(this.role) : -1) {
+        switch (this.role) {
           case 1:
             router.push("/admin");
             break;
@@ -84,11 +89,13 @@ export const useAuthStore = defineStore("auth", {
     logout() {
       this.token = null;
       this.username = null;
+      this.userId = null;
       this.role = null;
       this.error = null;
 
       localStorage.removeItem("token");
       localStorage.removeItem("username");
+      localStorage.removeItem("userId");
       localStorage.removeItem("role");
 
       router.push("/Login");

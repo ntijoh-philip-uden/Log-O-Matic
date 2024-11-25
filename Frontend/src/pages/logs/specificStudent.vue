@@ -1,121 +1,167 @@
-<template>
-  <v-container class="spacing-playground pa-8">
-      <v-card
-      class="mx-auto"
-      elevation="8"
-      max-width="448"
-      rounded="lg"
-      >
-          <v-card-text class="text-medium-emphasis font-weight-bold justify-center align-center fill-height d-flex text-h5">
-              <!-- Här kan man få elevnamnet att uppdateras dynamiskt, pallar bara inte -->
-            elev_namn Monday Week 48
-          </v-card-text>
-          
-          
-      </v-card>
-      <v-card
-          class="mx-auto mt-8"
-          elevation="8"
-          max-width="800"
-          rounded="lg"
-      >
+<script lang="ts" setup>
+import { ref, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
+import {
+  IAnswer,
+  IComment,
+  ILog,
+  IQuestion,
+  useLogStore,
+} from "@/stores/logStore";
+import { useUserStore } from "@/stores/userStore";
 
-          <v-container>
-              <v-card 
-                  width="100%"
-                  class="border-b-lg py-2"
-              >
-                  <v-card-title>
-                      Vad har du gjort under dagen?
-                  </v-card-title>
-                  <v-card-text>
-                      ed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                  </v-card-text>
-              </v-card>
+const logStore = useLogStore();
+const userStore = useUserStore();
 
-              <v-card 
-                  width="100%"
-                  class="border-b-lg py-2"
-              >
-                  <v-card-title>
-                      Vad har du lärt dig?
-                  </v-card-title>
-                  <v-card-text>
-                      ed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                  </v-card-text>
-              </v-card>
+const route = useRoute();
 
-              <v-card 
-                  width="100%"
-                  class="border-b-lg py-2"
-              >
-                  <v-card-title>
-                      Vad förstod du inte / Vilka frågor har du inte fått svar på?
-                  </v-card-title>
-                  <v-card-text>
-                      ed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                  </v-card-text>
-              </v-card>
+// Extract studentId, week, and day from the route
+const studentId = ref(
+  route.query.studentId ? parseInt(route.query.studentId as string, 10) : -1
+);
+const week = ref((route.query.week as string) || "");
+const day = ref((route.query.day as string) || "");
 
-              <v-card 
-                  width="100%"
-                  class="border-b-lg py-2"
-              >
-                  <v-card-title>
-                      Vad vill du lära dig mer om?
-                  </v-card-title>
-                  <v-card-text>
-                      ed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-                  </v-card-text>
-              </v-card>
-          </v-container>
+const dayId = ref(
+  (() => {
+    switch (day.value) {
+      case "monday":
+        return 1;
+      case "tuesday":
+        return 2;
+      case "wednesday":
+        return 3;
+      case "thursday":
+        return 4;
+      case "friday":
+        return 5;
+      case "saturday":
+        return 6;
+      case "sunday":
+        return 0;
+      default:
+        return null;
+    }
+  })()
+);
 
-          <v-timeline 
-              align="start"
-              width="100%"
-              class="px-8 mb-4"
-          >
-              <v-timeline-item>
-              <template v-slot:opposite>
-                  Daniel Berg
-              </template>
-              <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              </p>
-              </v-timeline-item>
+// Initialize reactive references for logs, questions, answers, and comments
+const logs = ref([] as ILog[]);
+const logFound = ref(false);
+const questions = ref([] as IQuestion[]);
+const answers = ref([] as IAnswer[]);
+const comments = ref([] as IComment[]);
 
-              <v-timeline-item>
-              <template v-slot:opposite>
-                  Örjan Lax
-              </template>
-              <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              </p>
-              </v-timeline-item>
-          </v-timeline>
+onMounted(async () => {
+  await userStore.loadUsers();
 
-          <v-textarea 
-              label="Comment" 
-              variant="solo-filled"
-              class="mx-6 mb-14"
-          ></v-textarea>
+  // Fetch logs from the store when the component mounts
+  await logStore.fetchLogsByWeek(week.value);
+  logs.value = logStore.logs;
 
-          <v-btn 
-              color="green"
-              class="position-absolute right-0 bottom-0 mr-6 mb-4"
-          >
-              SEND COMMENT
-          </v-btn>
-      </v-card>
-  </v-container>
-</template>
+  // Filter the logs for the selected day (reactively)
+  updateLogs();
+});
 
-<script>
-  export default {
-      
+// Function to update logs based on the selected day
+function updateLogs() {
+  const filteredLogs = logs.value.filter(
+    (log) =>
+      new Date(log.timestamp).getDay() === dayId.value &&
+      log.user_id === studentId.value
+  );
+
+  console.log(filteredLogs);
+
+  // If logs are found, update questions, answers, and comments
+  if (filteredLogs.length > 0) {
+    logFound.value = true;
+    const selectedLog = filteredLogs[0]; // You can handle multiple logs if needed
+    questions.value = logStore.getQuestionsByLogId(selectedLog.id);
+    answers.value = logStore.getAnswersByLogId(selectedLog.id);
+    comments.value = logStore.commentsByLogId(selectedLog.id);
+  } else {
+    // If no logs found, clear questions, answers, and comments
+    questions.value = [];
+    answers.value = [];
+    comments.value = [];
   }
+}
+
+// Watch for changes in `logs` or `dayId` to update the displayed data
+watch([logs, dayId], updateLogs);
+
+function capitalizeFirstLetter(string: string) {
+  if (!string) return string;
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 </script>
 
-<style lang="scss" scoped>
+<template>
+  <v-container class="spacing-playground pa-8">
+    <v-card class="mx-auto" elevation="8" max-width="448" rounded="lg">
+      <v-card-text
+        class="text-medium-emphasis font-weight-bold justify-center align-center fill-height d-flex text-h5"
+      >
+        <!-- Här kan man få elevnamnet att uppdateras dynamiskt, pallar bara inte -->
+        {{ userStore.byId(studentId)?.name }}
+        {{ capitalizeFirstLetter(day) }} Week {{ week }}
+      </v-card-text>
+    </v-card>
+    <v-card
+      v-if="logFound"
+      class="mx-auto mt-8"
+      elevation="8"
+      max-width="800"
+      rounded="lg"
+    >
+      <v-container>
+        <v-card
+          width="100%"
+          class="border-b-lg py-2"
+          v-for="(question, index) in questions"
+        >
+          <v-card-title> {{ question.question }} </v-card-title>
+          <v-card-text>
+            {{
+              answers.find((answer) => answer.question_id === question.id)
+                ?.answer
+            }}
+          </v-card-text>
+        </v-card>
+      </v-container>
 
-</style>
+      <v-timeline align="start" width="100%" class="px-8 mb-4">
+        <v-timeline-item v-for="(comment, index) in comments" :key="index">
+          <!-- Opposite Slot -->
+          <template v-slot:opposite>
+            {{ userStore.byId(comment.user_id)?.name || "Unknown" }}
+          </template>
+
+          <p>{{ comment.comment }}</p>
+        </v-timeline-item>
+      </v-timeline>
+
+      <v-textarea
+        label="Comment"
+        variant="solo-filled"
+        class="mx-6 mb-14"
+      ></v-textarea>
+
+      <v-btn color="green" class="position-absolute right-0 bottom-0 mr-6 mb-4">
+        SEND COMMENT
+      </v-btn>
+    </v-card>
+
+    <!-- Fallback when no logs are found -->
+    <v-card
+      v-else
+      class="mx-auto mt-8"
+      elevation="8"
+      max-width="800"
+      rounded="lg"
+    >
+      <v-card-title> Could not find log! </v-card-title>
+    </v-card>
+  </v-container>
+</template>
