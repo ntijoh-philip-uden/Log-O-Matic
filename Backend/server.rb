@@ -86,6 +86,9 @@ class Main < Sinatra::Base
         when :day
           conditions_query << "strftime('%d', timestamp) = ?"
           values << value
+        when :week_day
+          conditions_query << "strftime('%w', timestamp) = ?"
+          values << value
         end
       end
     
@@ -95,15 +98,17 @@ class Main < Sinatra::Base
       # Construct the final query and pass the entire array of values as a single parameter
       query = "#{base_query} #{conditions_query.join(' AND ')}"
       @db.execute(query, values)
-    end
+    end    
 
     def fetch_associated_data(log_ids)
       log_answers = @db.execute("SELECT * FROM logsanswers WHERE log_id IN (#{log_ids.join(',')})")
       question_ids = log_answers.map { |answer| answer['question_id'] }.uniq
       log_questions = @db.execute("SELECT * FROM questions WHERE id IN (#{question_ids.join(',')})")
       log_comments = @db.execute("SELECT * FROM comments WHERE log_id IN (#{log_ids.join(',')})")
+      comment_ids = log_comments.map { |comment| comment['id'] }.uniq
+      read_comments = @db.execute("SELECT * FROM readcomments WHERE comment_id IN (#{comment_ids.join(',')})")
     
-      { answers: log_answers, questions: log_questions, comments: log_comments }
+      { answers: log_answers, questions: log_questions, comments: log_comments, readcomments: read_comments }
     end
   end
 
@@ -171,6 +176,7 @@ class Main < Sinatra::Base
     log_id = params['id']
     user_id = params['user']
     week = params['week']
+    week_day = params['weekDay']
     year = params['year']
     month = params['month']
     day = params['day']
@@ -185,7 +191,7 @@ class Main < Sinatra::Base
         return { status: 'success', data: { log: log_data, **associated_data } }.to_json
       end
   
-      conditions = { user_id: user_id, week: week, month: month, day: day, year: year }
+      conditions = { user_id: user_id, week: week, month: month, day: day, year: year, week_day: week_day }
       log_data = fetch_logs_by_conditions(conditions)
   
       if log_data.empty?
@@ -200,7 +206,7 @@ class Main < Sinatra::Base
       return { status: 'error', message: 'Unauthorized' }.to_json
     end
   end
-
+  
   post '/api/v1/users' do
     p "Adding user"
     if authenticated?(1)
@@ -223,7 +229,7 @@ class Main < Sinatra::Base
     user = @db.execute('SELECT * FROM users WHERE email = ?', user_data['email']).first
     if user && BCrypt::Password.new(user['password']) == user_data['password']
       token = JWT.encode({ id: user['id'], issued_at: Time.now }, ENV['JWT_SECRET_SIGNING_KEY'])
-      { token: token, username: user['username'], role: user['role'] }.to_json
+      { token: token, username: user['username'], id: user['id'], role: user['role'] }.to_json
     else
       unauthorized_response
     end

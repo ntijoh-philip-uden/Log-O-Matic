@@ -1,147 +1,359 @@
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
+import { API_BASE_URL } from "../../config";
+import { useAuthStore } from "./authStore";
 
-// Define the ILog interface
+const authStore = useAuthStore();
+
+export interface IFetchData {
+  data: IInnerFetchData;
+}
+
+export interface IInnerFetchData {
+  logs: IPreLog[];
+  answers: IAnswer[];
+  questions: IQuestion[];
+  comments: IComment[];
+  readcomments: IReadComment[];
+}
+
+export interface IPreLog {
+  id: number;
+  user_id: number;
+  timestamp: string;
+}
+
 export interface ILog {
   id: number;
   user_id: number;
   timestamp: Date;
 }
 
-export const useLogStore = defineStore('logStore', {
+export interface IAnswer {
+  id: number;
+  log_id: number;
+  question_id: number;
+  answer: string;
+}
+
+export interface IQuestion {
+  id: number;
+  question: string;
+}
+
+export interface IComment {
+  id: number;
+  log_id: number;
+  user_id: number;
+  comment: string;
+}
+
+export interface IReadComment {
+  id: number;
+  user_id: number;
+  comment_id: number;
+}
+
+export const useLogStore = defineStore("logStore", {
   state: () => ({
-    logs: [] as ILog[], // List of logs
-    error: null as string | null, // Error messages
-    loading: false, // Loading state
+    logs: [] as ILog[],
+    answers: [] as IAnswer[],
+    questions: [] as IQuestion[],
+    comments: [] as IComment[],
+    readComments: [] as IReadComment[],
+    error: null as string | null,
+    loading: false,
   }),
+
+  getters: {
+    commentsByLogId(state) {
+      return (id: number): IComment[] => {
+        return state.comments.filter((comment) => comment.log_id === id);
+      };
+    },
+    userHasUnreadComment(state) {
+      return (userId: number, logId: number): boolean => {
+        const logComments = state.comments.filter(
+          (comment) => comment.log_id === logId
+        );
+        const userReadComments = state.readComments.filter(
+          (readComment) => readComment.user_id === userId
+        );
+        return logComments.some(
+          (comment) =>
+            !userReadComments.some(
+              (readComment) => comment.id === readComment.comment_id
+            )
+        );
+      };
+    },
+    getLogById(state) {
+      return (id: number): ILog | undefined => {
+        return state.logs.find((log) => log.id === id);
+      };
+    },
+    getLogsByWeek(state) {
+      return (week: string): ILog[] => {
+        return state.logs.filter(
+          (log) =>
+            new Date(log.timestamp).toISOString().slice(0, 10).split("-")[1] ===
+            week
+        );
+      };
+    },
+    getLogsByDate(state) {
+      return (date: string): ILog[] => {
+        return state.logs.filter(
+          (log) => new Date(log.timestamp).toISOString().split("T")[0] === date
+        );
+      };
+    },
+    getLogsByStudentId(state) {
+      return (studentId: number): ILog[] => {
+        return state.logs.filter((log) => log.user_id === studentId);
+      };
+    },
+    getLogsByStudentIdAndWeek(state) {
+      return (studentId: number, week: string): ILog[] => {
+        return state.logs.filter(
+          (log) =>
+            log.user_id === studentId &&
+            new Date(log.timestamp).toISOString().slice(0, 10).split("-")[1] ===
+              week
+        );
+      };
+    },
+    getLogsByStudentIdWeekAndDay(state) {
+      return (studentId: number, week: string, day: string): ILog[] => {
+        return state.logs.filter((log) => {
+          const logDate = new Date(log.timestamp);
+          const logWeek = logDate.toISOString().slice(0, 10).split("-")[1];
+          const logDay = logDate.getDay().toString(); // Converts day (0-6) to string
+          return (
+            log.user_id === studentId && logWeek === week && logDay === day
+          );
+        });
+      };
+    },
+    getQuestionsByLogId(state) {
+      return (logId: number): IQuestion[] => {
+        const logAnswers = state.answers.filter(
+          (answer) => answer.log_id === logId
+        );
+        return state.questions.filter((question) =>
+          logAnswers.some((answer) => answer.question_id === question.id)
+        );
+      };
+    },
+    getAnswersByLogId(state) {
+      return (logId: number): IAnswer[] => {
+        return state.answers.filter((answer) => answer.log_id === logId);
+      };
+    },
+    getAnswersByQuestionId(state) {
+      return (questionId: number): IAnswer[] => {
+        return state.answers.filter(
+          (answer) => answer.question_id === questionId
+        );
+      };
+    },
+  },
+
   actions: {
-    // Fetch all logs based on query parameters (like user_id, week, etc.)
-    async fetchLogs(params: Record<string, string | number>) {
-      this.loading = true;
-      this.error = null;
+    pushData(data: IInnerFetchData) {
+      const newLogs = (data.logs || []).map((log) => ({
+        ...log,
+        timestamp: new Date(log.timestamp),
+      }));
 
-      const queryString = new URLSearchParams(params as Record<string, string>).toString(); // Build the query string
-      try {
-        const response = await fetch(`http://localhost:9292/api/v1/log?${queryString}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Fetch the token from localStorage
-          },
-        });
+      this.logs = [
+        ...this.logs.filter(
+          (log) => !newLogs.some((newLog) => newLog.id === log.id)
+        ),
+        ...newLogs,
+      ];
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch logs');
-        }
+      const newAnswers = data.answers || [];
+      this.answers = [
+        ...this.answers.filter(
+          (answer) =>
+            !newAnswers.some((newAnswer) => newAnswer.id === answer.id)
+        ),
+        ...newAnswers,
+      ];
 
-        const data = await response.json();
-        this.logs = data.data.logs || []; // Store the logs in the state
-      } catch (error: any) {
-        this.error = error.message || 'An unknown error occurred'; // Safely access message
-      } finally {
-        this.loading = false;
-      }
-    },
+      const newQuestions = data.questions || [];
+      this.questions = [
+        ...this.questions.filter(
+          (question) =>
+            !newQuestions.some((newQuestion) => newQuestion.id === question.id)
+        ),
+        ...newQuestions,
+      ];
 
-    // Fetch log by ID
-    async fetchLogById(id: number) {
-      this.loading = true;
-      this.error = null;
+      const newComments = data.comments || [];
+      this.comments = [
+        ...this.comments.filter(
+          (comment) =>
+            !newComments.some((newComment) => newComment.id === comment.id)
+        ),
+        ...newComments,
+      ];
 
-      try {
-        const response = await fetch(`http://localhost:9292/api/v1/log?id=${id}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Directly use the token here
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch log by ID');
-        }
-
-        const data = await response.json();
-        this.logs = [data]; // Assuming a single log is returned by ID
-      } catch (error: any) {
-        this.error = error.message || 'An unknown error occurred';
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    // Fetch logs for a specific week
-    async fetchLogsByWeekAndUser(userId: number, week: string, year: string = new Date().getFullYear().toString()) {
-      this.loading = true;
-      this.error = null;
-
-      try {
-        const response = await fetch(`http://127.0.0.1:9292/api/v1/log?user=${userId}&week=${week}&year=${year}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Fetch the token from localStorage
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch logs for the week');
-        }
-
-        const data = await response.json();
-        this.logs = data.data.log || []; // Store the logs in the state
-      } catch (error: any) {
-        this.error = error.message || 'An unknown error occurred';
-      } finally {
-        this.loading = false;
-      }
+      const newReadComments = data.readcomments || [];
+      this.readComments = [
+        ...this.readComments.filter(
+          (readComment) =>
+            !newReadComments.some(
+              (newReadComment) => newReadComment.id === readComment.id
+            )
+        ),
+        ...newReadComments,
+      ];
     },
 
     async fetchLogsByWeek(week: string) {
       this.loading = true;
       this.error = null;
 
-      await fetch('http://127.0.0.1:9292/api/v1/log?week=47', {  
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiaXNzdWVkX2F0IjoiMjAyNC0xMS0yMSAwOTo0Njo0MiArMDEwMCJ9.juPSVxmmvl-0xwaT0L8v-WFdJOxccKoAwcgnXjqd1rE`, // Include the token directly here
-        }
-      })
-      .then(response => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/v1/log?week=${week}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authStore.token}`,
+            },
+          }
+        );
+
         if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+          throw new Error("Failed to fetch logs");
         }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Log Data:', data);  // The response will be displayed here
-      })
-      .catch(error => console.error('Error:', error));
+
+        const data = (await response.json()) as IFetchData;
+        this.pushData(data.data);
+      } catch (error: any) {
+        this.error = error.message || "An unknown error occurred";
+      } finally {
+        this.loading = false;
+      }
     },
 
-    // Add a new log
+    async fetchLogsByWeekAndUser(
+      userId: number,
+      week: string,
+      year: string = new Date().getFullYear().toString()
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/v1/log?user=${userId}&week=${week}&year=${year}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authStore.token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch logs for the week");
+        }
+
+        const data = (await response.json()) as IFetchData;
+        this.pushData(data.data);
+      } catch (error: any) {
+        this.error = error.message || "An unknown error occurred";
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchLogsByWeekDayAndUser(
+      userId: number,
+      week: string,
+      weekDay: string,
+      year: string = new Date().getFullYear().toString()
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/v1/log?user=${userId}&week=${week}&weekDay=${weekDay}&year=${year}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authStore.token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch logs for the week");
+        }
+
+        const data = (await response.json()) as IFetchData;
+        this.pushData(data.data);
+      } catch (error: any) {
+        this.error = error.message || "An unknown error occurred";
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchLogById(id: number) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/log?id=${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authStore.token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch log by ID");
+        }
+
+        const data = await response.json();
+        this.logs = [data];
+      } catch (error: any) {
+        this.error = error.message || "An unknown error occurred";
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async addNew(logData: ILog) {
       this.loading = true;
       this.error = null;
 
       try {
-        const response = await fetch('http://localhost:4567/api/v1/log', {
-          method: 'POST',
+        const response = await fetch(`${API_BASE_URL}/api/v1/log/new`, {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Include the JWT token
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authStore.token}`,
           },
-          body: JSON.stringify(logData), // Send the new log data
+          body: JSON.stringify(logData),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to add log');
+          throw new Error("Failed to add log");
         }
 
-        // Optionally, you can re-fetch logs to update the state
-        await this.fetchLogs({ user_id: logData.user_id }); // Example: refetch logs for the user
+        await this.fetchLogsByWeek("47");
       } catch (error: any) {
-        this.error = error.message || 'An unknown error occurred';
+        this.error = error.message || "An unknown error occurred";
       } finally {
         this.loading = false;
       }

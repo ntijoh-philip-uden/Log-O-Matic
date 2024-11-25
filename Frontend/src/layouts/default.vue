@@ -43,7 +43,7 @@ if (!isAuthenticated.value) {
             Admin
           </v-btn>
 
-          <v-btn v-if="isAuthenticated" @click="router.push('/logs')">
+          <v-btn v-if="isAuthenticated" @click="router.push('/logs/logs')">
             <v-icon icon="mdi-format-list-bulleted" />
             Logs
           </v-btn>
