@@ -26,8 +26,8 @@ const studentsHeaders = [
 ];
 
 // Reactive references for teachers and students lists
-const teachers = computed(() => userStore.allTeachers);
-const students = computed(() => userStore.allStudents);
+const teachers = computed(() => userStore.allTeachers() || []);
+const students = computed(() => userStore.allStudents() || []);
 
 const loading = ref(false);
 const teacherPasswordInputs = ref<Record<number, string>>({});

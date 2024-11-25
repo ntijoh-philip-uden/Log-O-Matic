@@ -96,7 +96,7 @@ class Seeder
     # Logs
     db.execute('INSERT INTO logs (user_id) VALUES (?)', [3]);
     db.execute('INSERT INTO logs (user_id) VALUES (?)', [4]);
-    db.execute('INSERT INTO logs (user_id) VALUES (?)', [5]);
+    db.execute('INSERT INTO logs (user_id, timestamp) VALUES (?, ?)', [5, "2024-11-18"]);
     
     # Logs answers
     db.execute('INSERT INTO logsanswers (log_id, question_id, answer) VALUES (?, ?, ?)', [1, 1, "1 lorem"]);

@@ -22,7 +22,7 @@ const newTeacher = ref({ email: "", name: "", password: "" });
 const newStudent = ref({ email: "", name: "", teacher: "", password: "" });
 
 // List of teachers to populate the dropdown in the student form
-const teachers = computed(() => userStore.allTeachers);
+const teachers = computed(() => userStore.allTeachers() || []);
 
 // Function to handle adding a new teacher
 async function handleAddTeacher() {
@@ -87,11 +87,6 @@ const passwordRules = ref([
 const teacherRules = ref([
   (v: string) => loading.value || !!v || "Teacher is required", // Ensure teacher selection is made
 ]);
-
-// Initial load of users
-onMounted(async () => {
-  await userStore.loadUsers();
-});
 </script>
 
 <template>

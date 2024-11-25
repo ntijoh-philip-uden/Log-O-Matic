@@ -64,22 +64,24 @@ export const useUserStore = defineStore("users", {
       };
     },
     allTeachers(state) {
-      return state.users.filter(
-        (user) => user.role <= 2 && user.teacherId == null
-      ) as ITeacher[];
+      return (): ITeacher[] =>
+        state.users.filter(
+          (user) => user.role <= 2 && user.teacherId == null
+        ) as ITeacher[];
     },
     allStudents(state) {
-      return state.users
-        .filter((user) => user.role === 3)
-        .map((student) => {
-          const teacher = state.users.find(
-            (user) => user.id === student.teacherId
-          );
-          return {
-            ...student,
-            teacherName: teacher ? teacher.name : "No Teacher Assigned",
-          };
-        }) as IStudent[];
+      return (): IStudent[] =>
+        state.users
+          .filter((user) => user.role === 3)
+          .map((student) => {
+            const teacher = state.users.find(
+              (user) => user.id === student.teacherId
+            );
+            return {
+              ...student,
+              teacherName: teacher ? teacher.name : "No Teacher Assigned",
+            };
+          }) as IStudent[];
     },
   },
 
@@ -114,8 +116,6 @@ export const useUserStore = defineStore("users", {
           teacherId: innerData.teacher_id,
         } as IUsers;
       });
-
-      console.log(this.users);
     },
     async addNew(
       email: string,
