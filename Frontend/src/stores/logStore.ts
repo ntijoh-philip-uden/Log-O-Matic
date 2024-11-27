@@ -133,6 +133,7 @@ export const useLogStore = defineStore("logStore", {
           );
         });
       };
+      //console.log("This is the logs ", this.logs)
     },
     getQuestionsByLogId(state) {
       return (logId: number): IQuestion[] => {
@@ -232,6 +233,7 @@ export const useLogStore = defineStore("logStore", {
         }
 
         const data = (await response.json()) as IFetchData;
+        console.log("This is the log from store, here is data: ", data.data)
         this.pushData(data.data);
       } catch (error: any) {
         this.error = error.message || "An unknown error occurred";
@@ -265,6 +267,7 @@ export const useLogStore = defineStore("logStore", {
         }
 
         const data = (await response.json()) as IFetchData;
+        //console.log("this is data", data) // debugging log 
         this.pushData(data.data);
       } catch (error: any) {
         this.error = error.message || "An unknown error occurred";
@@ -325,6 +328,7 @@ export const useLogStore = defineStore("logStore", {
         }
 
         const data = await response.json();
+        console.log("This is the data of the log fetched by id: ", data)
         this.logs = [data];
       } catch (error: any) {
         this.error = error.message || "An unknown error occurred";
