@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserStore } from "@/stores/userStore";
 import { useLogStore } from "@/stores/logStore";
+import { API_BASE_URL } from "../../config";
 
 const logStore = useLogStore();
 const userStore = useUserStore();
@@ -58,7 +59,7 @@ const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 async function getLogs() {
   try {
     await userStore.loadUsers();
-    const loggedInUser = userStore.byName(authStore.username)[0];
+    // const loggedInUser = userStore.byName(authStore.username)[0];
     if (!loggedInUser) {
       console.error("Logged-in user not found");
       return;
@@ -118,8 +119,29 @@ async function getLogs() {
 }
 
 // Function to add logs
-function addLogs() {
-  console.log("Submitting answers:", answers.value);
+async function addLogs() {
+  console.log(answers.value);
+
+  try {
+  const response = await fetch(`${API_BASE_URL}/api/v1/log/new`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authStore.token}`,
+    },
+    body: JSON.stringify( { appleee : answers.value }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to add log");
+  }
+} catch (error: any) {
+  console.log('ff');
+} finally {
+  console.log('lades färdigt!');
+}
+
+  
 }
 
 // Function to calculate the current week of the year

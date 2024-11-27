@@ -278,4 +278,9 @@ class Main < Sinatra::Base
     end
   end
 
+  post '/api/v1/log/new' do
+    appleee = params['appleee']
+    p "här är loggarna #{appleee}"
+  end
+
 end

@@ -337,7 +337,7 @@ export const useLogStore = defineStore("logStore", {
       }
     },
 
-    async addNew(logData: ILog) {
+    async addNew(logData: string[]) {
       this.loading = true;
       this.error = null;
 
